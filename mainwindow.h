@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include "image.h"
+//#include "clickablelabel.h"
 #include <QWidget>
 #include <QMenu>
 #include <QLabel>
@@ -15,6 +16,7 @@ protected:
 
 private slots:
     void open();
+    void labelClicked(QMouseEvent*);
 
 private:
     void createActions();

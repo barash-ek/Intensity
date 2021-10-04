@@ -10,6 +10,8 @@
 #include <QImageWriter>
 #include <QApplication>
 #include <QMenuBar>
+#include <QDebug>
+#include <QHBoxLayout>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), image(new Image(this))
 {
@@ -35,6 +37,12 @@ void MainWindow::open()
                                tr("Open File"), "D:/Inobitec/Dicom/Pictures");
     if (!fileName.isEmpty())
         image->openImage(fileName);
+}
+void MainWindow::labelClicked(QMouseEvent*)
+{
+    text->setStyleSheet("background-color: yellow");
+    int intens=image->get();
+    text->setText(QString::number(intens));
 }
 void MainWindow::createActions()
 {
@@ -69,8 +77,9 @@ bool MainWindow::maybeExit()
 }
 void MainWindow::createText()
 {
+    QHBoxLayout *hbox = new QHBoxLayout(image);
+    hbox->setSpacing(5);
     text = new QLabel(image);
-    QString t=QString("Intensity: ")+image->Image::get();
-    text->setText(t);
-    text->setAlignment(Qt::AlignCenter);
+    hbox->addWidget(text, 0, Qt::AlignRight | Qt::AlignTop);
+    connect(image, SIGNAL(clicked(QMouseEvent*)), this, SLOT(labelClicked(QMouseEvent*)));
 }

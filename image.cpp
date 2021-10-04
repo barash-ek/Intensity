@@ -26,15 +26,15 @@ bool Image::openImage(const QString &fileName)
 void Image::mousePressEvent(QMouseEvent *event) //указатель на объект события, который содержит информацию о нём
 {
     if (event->button() == Qt::LeftButton) {
-        //lastPoint = event->pos();
-       // qDebug()<<lastPoint;
         x=event->x();
         y=event->y();
-        qDebug()<<x<<" "<<y<<" ";
-        QRgb rgb=picture.pixel(x, y);
-        QString intens = QString::number(rgb);
-        intensity=intens;
-        qDebug()<<picture.scanLine(y)[x]; //проверить не ноль
+        unsigned char *a;
+        a=picture.scanLine(y);
+        if(a)
+            intensity=int(a[x]);
+        else
+            qDebug() <<"a is a null pointer";
+        emit clicked(event);
     }
 }
 void Image::resizeEvent(QResizeEvent *event)

@@ -10,7 +10,9 @@ public:
     Image(QWidget *parent = nullptr);
 
     bool openImage(const QString &fileName);
-    QString get() {return intensity;};
+    int get() {return intensity;};
+signals:
+ void clicked(QMouseEvent *); //объект класса будет испускать этот сигнал
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -22,6 +24,6 @@ private:
     QImage picture;
     //QPoint lastPoint;
     int x, y;
-    QString intensity;
+    int intensity;
 };
 #endif // IMAGE_H
