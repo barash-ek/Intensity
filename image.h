@@ -1,6 +1,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 #include <QWidget>
+#include <QLabel>
 
 class Image : public QWidget
 {
@@ -11,19 +12,19 @@ public:
 
     bool openImage(const QString &fileName);
     int get() {return intensity;};
-signals:
- void clicked(QMouseEvent *); //объект класса будет испускать этот сигнал
+//signals:
+ //void clicked(QMouseEvent *); //объект класса будет испускать этот сигнал
 
 protected:
-    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
 private:
     void resizeImage(QImage *image, const QSize &newSize);
+    void createText();
     QImage picture;
-    //QPoint lastPoint;
-    int x, y;
     int intensity;
+    QLabel *text;
 };
 #endif // IMAGE_H

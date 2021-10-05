@@ -3,10 +3,13 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QDebug>
+#include <QHBoxLayout>
 Image::Image(QWidget *parent)
     : QWidget(parent)
 {
     setAttribute(Qt::WA_StaticContents); //indicate that the widget contents are rooted to the top-left corner and don't change when the widget is resized.
+    this->setMouseTracking(true);
+    createText();
 }
 bool Image::openImage(const QString &fileName)
 {
@@ -23,19 +26,19 @@ bool Image::openImage(const QString &fileName)
     update();
     return true;
 }
-void Image::mousePressEvent(QMouseEvent *event) //указатель на объект события, который содержит информацию о нём
+void Image::mouseMoveEvent(QMouseEvent *event) //указатель на объект события, который содержит информацию о нём
 {
-    if (event->button() == Qt::LeftButton) {
-        x=event->x();
-        y=event->y();
+        int x=event->x();
+        int y=event->y();
         unsigned char *a;
         a=picture.scanLine(y);
         if(a)
             intensity=int(a[x]);
         else
             qDebug() <<"a is a null pointer";
-        emit clicked(event);
-    }
+        text->setStyleSheet("background-color: yellow");
+        int intens=get();
+        text->setText(QString::number(intens));
 }
 void Image::resizeEvent(QResizeEvent *event)
 {
@@ -63,4 +66,11 @@ void Image::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     QRect dirtyRect = event->rect();
     painter.drawImage(dirtyRect, picture, dirtyRect);
+}
+void Image::createText()
+{
+    QHBoxLayout *hbox = new QHBoxLayout(this);
+    hbox->setSpacing(5);
+    text = new QLabel(this);
+    hbox->addWidget(text, 0, Qt::AlignRight | Qt::AlignTop);
 }

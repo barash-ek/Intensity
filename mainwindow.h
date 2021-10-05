@@ -16,19 +16,16 @@ protected:
 
 private slots:
     void open();
-    void labelClicked(QMouseEvent*);
+    //void labelClicked(QMouseEvent*);
 
 private:
     void createActions();
     void createMenus();
-    void createText();
     bool maybeExit();
 
     Image *image;
     QMenu *fileMenu;
     QAction *openAct;
     QAction *exitAct;
-
-    QLabel *text;
 };
 #endif //MAINWINDOW_H

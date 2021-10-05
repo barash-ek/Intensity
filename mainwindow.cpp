@@ -11,7 +11,6 @@
 #include <QApplication>
 #include <QMenuBar>
 #include <QDebug>
-#include <QHBoxLayout>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), image(new Image(this))
 {
@@ -19,7 +18,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     createActions();
     createMenus();
-    createText();
 
     setWindowTitle(tr("Image"));
     resize(500, 500);
@@ -38,12 +36,12 @@ void MainWindow::open()
     if (!fileName.isEmpty())
         image->openImage(fileName);
 }
-void MainWindow::labelClicked(QMouseEvent*)
+/*void MainWindow::labelClicked(QMouseEvent*)
 {
     text->setStyleSheet("background-color: yellow");
     int intens=image->get();
     text->setText(QString::number(intens));
-}
+}*/
 void MainWindow::createActions()
 {
     openAct = new QAction(tr("&Open..."), this);
@@ -74,12 +72,4 @@ bool MainWindow::maybeExit()
         else if (ret == QMessageBox::No)
             return false;
     return false; //in order to stay
-}
-void MainWindow::createText()
-{
-    QHBoxLayout *hbox = new QHBoxLayout(image);
-    hbox->setSpacing(5);
-    text = new QLabel(image);
-    hbox->addWidget(text, 0, Qt::AlignRight | Qt::AlignTop);
-    connect(image, SIGNAL(clicked(QMouseEvent*)), this, SLOT(labelClicked(QMouseEvent*)));
 }
