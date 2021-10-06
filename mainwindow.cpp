@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWindowTitle(tr("Image"));
     resize(500, 500);
+    connect(image, SIGNAL (signal_im(QSize)), this, SLOT (slot_im(QSize)) );
 }
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -66,4 +67,9 @@ bool MainWindow::maybeExit()
         else if (ret == QMessageBox::No)
             return false;
     return false; //in order to stay
+}
+void MainWindow::slot_im(QSize s)
+{
+    if(size()!=s)
+    this->resize(s);
 }

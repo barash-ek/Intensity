@@ -11,6 +11,8 @@ public:
     Image(QWidget *parent = nullptr);
     bool openImage(const QString &fileName);
     int get() {return intensity;};
+signals:
+    void signal_im(QSize s);
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;

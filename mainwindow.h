@@ -15,6 +15,7 @@ protected:
 
 private slots:
     void open();
+    void slot_im(QSize s);
 
 private:
     void createActions();
