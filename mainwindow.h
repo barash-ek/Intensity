@@ -4,7 +4,6 @@
 //#include "clickablelabel.h"
 #include <QWidget>
 #include <QMenu>
-#include <QLabel>
 #include <QMainWindow>
 class MainWindow : public QMainWindow
 {
@@ -16,13 +15,11 @@ protected:
 
 private slots:
     void open();
-    //void labelClicked(QMouseEvent*);
 
 private:
     void createActions();
     void createMenus();
     bool maybeExit();
-
     Image *image;
     QMenu *fileMenu;
     QAction *openAct;

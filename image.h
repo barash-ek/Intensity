@@ -9,11 +9,8 @@ class Image : public QWidget
 
 public:
     Image(QWidget *parent = nullptr);
-
     bool openImage(const QString &fileName);
     int get() {return intensity;};
-//signals:
- //void clicked(QMouseEvent *); //объект класса будет испускать этот сигнал
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;

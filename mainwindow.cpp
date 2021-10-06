@@ -36,12 +36,6 @@ void MainWindow::open()
     if (!fileName.isEmpty())
         image->openImage(fileName);
 }
-/*void MainWindow::labelClicked(QMouseEvent*)
-{
-    text->setStyleSheet("background-color: yellow");
-    int intens=image->get();
-    text->setText(QString::number(intens));
-}*/
 void MainWindow::createActions()
 {
     openAct = new QAction(tr("&Open..."), this);
