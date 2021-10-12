@@ -18,11 +18,13 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
 private:
     void resizeImage(QImage *image, const QSize &newSize);
     void createText();
     QImage picture;
+    bool open=false;
     int intensity;
     QLabel *text;
 };
