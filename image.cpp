@@ -35,16 +35,31 @@ void Image::mouseMoveEvent(QMouseEvent *event)
         int y=event->y();
         unsigned char *a;
         a=picture.scanLine(y);
+        int intens=0;
         if(a)
-            intensity=int(a[x]);
+            intens=int(a[x]);
         else
             qDebug() <<"a is a null pointer";
         text->move(x-12, y+18);
-        int intens=get();
         text->setText(QString::number(intens));
         if(!text->isVisible())
             text->show();
     }
+}
+void Image::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+    if(text->isVisible())
+        text->hide();
+    drawPoint(event->pos());
+    }
+}
+void Image::drawPoint(const QPoint &pressPoint)
+{
+    QPainter painter(&picture);
+    painter.setPen(QPen(Qt::red, 3));
+    painter.drawPoint(pressPoint);
+    update();
 }
 void Image::resizeEvent(QResizeEvent *event)
 {
@@ -79,4 +94,12 @@ void Image::createText()
     text->setStyleSheet("background-color: white");
     //text->setStyleSheet("color: red");
     text->hide();
+}
+void Image::clearImage()
+{
+    picture.fill(qRgb(255, 255, 255));
+    open=false;
+    if(text->isVisible())
+        text->hide();
+    update();
 }

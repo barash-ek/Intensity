@@ -25,5 +25,6 @@ private:
     QMenu *fileMenu;
     QAction *openAct;
     QAction *exitAct;
+    QAction *clearScreenAct;
 };
 #endif //MAINWINDOW_H
