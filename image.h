@@ -23,10 +23,13 @@ protected:
     void leaveEvent(QEvent *event) override;
 
 private:
-    void drawPoint(const QPoint &pressPoint);
+   // void drawPoint(const QPoint &pressPoint);
+    void drawArea(const QPoint &pressPoint);
     void resizeImage(QImage *image, const QSize &newSize);
     void createText();
+    int valueIntensity(const QPoint &pointIntensity);
     QImage picture;
+    QSize sizePicture;
     bool open=false;
     QLabel *text;
 };

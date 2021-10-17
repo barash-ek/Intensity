@@ -2,8 +2,13 @@
 #include <QImage>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QRgb>
+#include <QColor>
 #include <QDebug>
-#include <QHBoxLayout>
+#include <QVector>
+#include <QQueue>
+#include <QList>
+#include <QPoint>
 Image::Image(QWidget *parent)
     : QWidget(parent)
 {
@@ -17,6 +22,7 @@ bool Image::openImage(const QString &fileName)
     if (!loadedImage.load(fileName))
         return false;
     QSize size=loadedImage.size();
+    sizePicture=size;
     emit signal_im(size);
     QSize newSize = loadedImage.size().expandedTo(this->size());
     QImage convertedImage;
@@ -29,36 +35,110 @@ bool Image::openImage(const QString &fileName)
 }
 void Image::mouseMoveEvent(QMouseEvent *event)
 {
-    if(open)
+    if(open) //to hide Qlabel for initializing image
     {
-        int x=event->x();
-        int y=event->y();
-        unsigned char *a;
-        a=picture.scanLine(y);
-        int intens=0;
-        if(a)
-            intens=int(a[x]);
-        else
-            qDebug() <<"a is a null pointer";
-        text->move(x-12, y+18);
-        text->setText(QString::number(intens));
-        if(!text->isVisible())
-            text->show();
+        int a=valueIntensity(event->pos());
+        if(a>=0&&a<=255)
+        {
+            int intensity=valueIntensity(event->pos());
+            text->move(event->x()-12, event->y()+18);
+            text->setText(QString::number(intensity));
+            if(!text->isVisible())
+                text->show();
+        }
     }
+}
+int Image::valueIntensity(const QPoint &pointIntensity)
+{
+    int x=pointIntensity.x();
+    int y=pointIntensity.y();
+    unsigned char *a;
+    a=picture.scanLine(y-1);
+    int intens=-1;
+    if(a)
+        intens=int(a[x-1]);
+    else
+        qDebug() <<"a is a null pointer";
+    return intens;
 }
 void Image::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
     if(text->isVisible())
         text->hide();
-    drawPoint(event->pos());
+    //qDebug()<<valueIntensity(event->pos());
+    //drawPoint(event->pos());
+    drawArea(event->pos());
     }
 }
-void Image::drawPoint(const QPoint &pressPoint)
+/*void Image::drawPoint(const QPoint &pressPoint)                         !!!drawPoint!!!
 {
     QPainter painter(&picture);
     painter.setPen(QPen(Qt::red, 3));
     painter.drawPoint(pressPoint);
+    update();
+}*/
+void Image::drawArea(const QPoint &pressPoint)
+{
+    QVector<QVector <int> > conditionPoint;
+    for(int i=0; i < sizePicture.height(); ++i)
+    {
+         QVector<int> strVector;
+         for(int j=0; j < sizePicture.width(); ++j)
+             strVector.push_back(0);
+         conditionPoint.push_back(strVector);
+    }
+    conditionPoint[pressPoint.y()-1][pressPoint.x()-1]=1;
+    int mainIntensity=valueIntensity(pressPoint);
+    int diff=4;
+    QQueue<QPoint> pointsQueue;
+    QVector<QPoint> pointsVector;
+    pointsQueue.enqueue(pressPoint);
+    int x, y;
+    for(int i=0;i<pointsQueue.count();++i)
+    {
+        x=pointsQueue[i].x();
+        y=pointsQueue[i].y();
+        pointsVector << QPoint(x,y-1) << QPoint(x+1, y) << QPoint(x, y+1) << QPoint(x-1, y);
+        for(int it=0; it < pointsVector.count();++it)
+        {
+            if(conditionPoint[pointsVector[it].y()-1][pointsVector[it].x()-1]==0)
+            {
+                if(abs(valueIntensity(pointsVector[it])-mainIntensity)<=diff)
+                {
+                    conditionPoint[pointsVector[it].y()-1][pointsVector[it].x()-1]=1;
+                    pointsQueue.enqueue(pointsVector[it]);
+                }
+                else
+                    conditionPoint[pointsVector[it].y()-1][pointsVector[it].x()-1]=-1;
+            }
+        }
+        //int a=pointsQueue.count();
+        //for(int i=0;i<a; ++i)
+          // qDebug() <<pointsQueue.dequeue();
+        pointsVector.clear();
+    }
+    /*for(int i=0; i < sizePicture.height(); ++i)
+    {
+        for(int j=0; j < sizePicture.width(); ++j)
+            if(conditionPoint[i][j])
+            qDebug() << conditionPoint[i][j];
+    }*/
+    QImage foundArea(picture.width(), picture.height(), QImage::Format_ARGB32);
+    QRgb transparent=qRgba(0,0,0,0);
+    QRgb redColor=qRgba(255, 0, 0, 255);
+    for(int i=0;i<foundArea.height();++i)
+    {
+        for(int j=0;j<foundArea.width();++j)
+        {
+            if(conditionPoint[i][j]==1)
+                foundArea.setPixel(j,i, redColor);
+            else
+                foundArea.setPixel(j,i,transparent);
+        }
+    }
+    QPainter painter(&picture);
+    painter.drawImage(0,0, foundArea);
     update();
 }
 void Image::resizeEvent(QResizeEvent *event)
