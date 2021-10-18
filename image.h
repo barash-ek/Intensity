@@ -29,6 +29,7 @@ private:
     void createText();
     int valueIntensity(const QPoint &pointIntensity);
     QImage picture;
+    QImage pictureArea;
     QSize sizePicture;
     bool open=false;
     QLabel *text;

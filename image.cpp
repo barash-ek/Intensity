@@ -137,9 +137,7 @@ void Image::drawArea(const QPoint &pressPoint)
                 foundArea.setPixel(j,i,transparent);
         }
     }
-    QPainter painter(&picture);
-    painter.drawImage(0,0, foundArea);
-    update();
+    pictureArea=foundArea;
 }
 void Image::resizeEvent(QResizeEvent *event)
 {
@@ -161,6 +159,8 @@ void Image::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     QRect dirtyRect = event->rect();
     painter.drawImage(dirtyRect, picture, dirtyRect);
+    painter.drawImage(dirtyRect, pictureArea, dirtyRect);
+    update();
 }
 void Image::leaveEvent(QEvent *event)
 {
