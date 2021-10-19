@@ -53,10 +53,10 @@ int Image::valueIntensity(const QPoint &pointIntensity)
     int x=pointIntensity.x();
     int y=pointIntensity.y();
     unsigned char *a;
-    a=picture.scanLine(y-1);
+    a=picture.scanLine(y);
     int intens=-1;
     if(a)
-        intens=int(a[x-1]);
+        intens=int(a[x]);
     else
         qDebug() <<"a is a null pointer";
     return intens;
@@ -88,9 +88,9 @@ void Image::drawArea(const QPoint &pressPoint)
              strVector.push_back(0);
          conditionPoint.push_back(strVector);
     }
-    conditionPoint[pressPoint.y()-1][pressPoint.x()-1]=1;
+    conditionPoint[pressPoint.y()][pressPoint.x()]=1;
     int mainIntensity=valueIntensity(pressPoint);
-    int diff=4;
+    int diff=2;
     QQueue<QPoint> pointsQueue;
     QVector<QPoint> pointsVector;
     pointsQueue.enqueue(pressPoint);
@@ -99,30 +99,58 @@ void Image::drawArea(const QPoint &pressPoint)
     {
         x=pointsQueue[i].x();
         y=pointsQueue[i].y();
-        pointsVector << QPoint(x,y-1) << QPoint(x+1, y) << QPoint(x, y+1) << QPoint(x-1, y);
+        if(y==0&&(x>=1&&x<=picture.width()-2))
+        {
+            pointsVector << QPoint(x+1, y) << QPoint(x, y+1) << QPoint(x-1, y);
+        }
+        else if((y==picture.height()-1)&&(x>=1&&x<=picture.width()-2))
+        {
+            pointsVector << QPoint(x, y-1) << QPoint(x+1, y)  << QPoint(x-1, y);
+        }
+        else if(x==0&&(y>=1&&y<=picture.height()-2))
+        {
+            pointsVector << QPoint(x, y-1) << QPoint(x+1, y) << QPoint(x, y+1);
+        }
+        else if((x==picture.width()-1)&&(y>=1&&y<=picture.height()-2))
+        {
+            pointsVector << QPoint(x, y-1) << QPoint(x, y+1) << QPoint(x-1, y);
+        }
+        else if((y==picture.height()-1)&&(x==0))
+        {
+            pointsVector << QPoint(x, y-1) << QPoint(x+1,y) ;
+        }
+        else if((y==0)&&(x==picture.width()-1))
+        {
+            pointsVector << QPoint(x-1,y) << QPoint(x, y+1);
+        }
+        else if((y==picture.height()-1)&&(x==picture.width()-1))
+        {
+            pointsVector << QPoint(x,y-1) << QPoint(x-1, y);
+        }
+        else if(y==0&&x==0)
+        {
+            pointsVector << QPoint(x+1, y) << QPoint(x, y+1);
+        }
+        else
+            pointsVector << QPoint(x,y-1) << QPoint(x+1, y) << QPoint(x, y+1) << QPoint(x-1, y);
         for(int it=0; it < pointsVector.count();++it)
         {
-            if(conditionPoint[pointsVector[it].y()-1][pointsVector[it].x()-1]==0)
+            if(conditionPoint[pointsVector[it].y()][pointsVector[it].x()]==0)
             {
                 if(abs(valueIntensity(pointsVector[it])-mainIntensity)<=diff)
                 {
-                    conditionPoint[pointsVector[it].y()-1][pointsVector[it].x()-1]=1;
+                    conditionPoint[pointsVector[it].y()][pointsVector[it].x()]=1;
                     pointsQueue.enqueue(pointsVector[it]);
                 }
                 else
-                    conditionPoint[pointsVector[it].y()-1][pointsVector[it].x()-1]=-1;
+                    conditionPoint[pointsVector[it].y()][pointsVector[it].x()]=-1;
             }
         }
-        //int a=pointsQueue.count();
-        //for(int i=0;i<a; ++i)
-          // qDebug() <<pointsQueue.dequeue();
-        pointsVector.clear();
+        pointsVector.clear();                         //Вывод: ошибка выдается тогда, когда доходим до угловых точек!
     }
     /*for(int i=0; i < sizePicture.height(); ++i)
     {
-        for(int j=0; j < sizePicture.width(); ++j)
-            if(conditionPoint[i][j])
-            qDebug() << conditionPoint[i][j];
+        qDebug() << conditionPoint[i];
     }*/
     QImage foundArea(picture.width(), picture.height(), QImage::Format_ARGB32);
     QRgb transparent=qRgba(0,0,0,0);
