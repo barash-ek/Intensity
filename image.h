@@ -2,6 +2,7 @@
 #define IMAGE_H
 #include <QWidget>
 #include <QLabel>
+#include <QFrame>
 
 class Image : public QWidget
 {
@@ -30,6 +31,7 @@ private:
     int valueIntensity(const QPoint &pointIntensity);
     QImage picture;
     QImage pictureArea;
+    QFrame *frameImage;
     QSize sizePicture;
     bool open=false;
     QLabel *text;

@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include "image.h"
+#include "rightbar.h"
 //#include "clickablelabel.h"
 #include <QWidget>
 #include <QMenu>
@@ -22,6 +23,7 @@ private:
     void createMenus();
     bool maybeExit();
     Image *image;
+    rightBar *bar;
     QMenu *fileMenu;
     QAction *openAct;
     QAction *exitAct;

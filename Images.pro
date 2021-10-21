@@ -6,9 +6,11 @@ CONFIG += c++11
 
 HEADERS += \
     image.h \
-    mainwindow.h
+    mainwindow.h \
+    rightbar.h
 
 SOURCES += \
     image.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    rightbar.cpp

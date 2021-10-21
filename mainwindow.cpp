@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "image.h"
+#include "rightbar.h"
 #include <QWidget>
+#include <QHBoxLayout>
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <QFileDialog>
@@ -11,17 +13,29 @@
 #include <QApplication>
 #include <QMenuBar>
 #include <QDebug>
+#include <QFrame>
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), image(new Image(this))
+    : QMainWindow(parent), image(new Image(this)), bar(new rightBar(this))
 {
-    setCentralWidget(image);
-
+    QHBoxLayout *imageBar = new QHBoxLayout;
+    imageBar->addWidget(image, Qt::AlignCenter);
+    imageBar->setSpacing(2);
+    //imageBar->addStretch(1);
+    imageBar->addWidget(bar);
+    QWidget *widget = new QWidget;
+        widget->setLayout(imageBar);
+    setCentralWidget(widget);
+    //setLayout(imageBar);
+    QPalette pall;
+    pall.setColor(this->backgroundRole(), Qt::white);
+    setPalette(pall);
     createActions();
     createMenus();
-
-    setWindowTitle(tr("Image"));
-    resize(500, 500);
     connect(image, SIGNAL (signal_im(QSize)), this, SLOT (slot_im(QSize)) );
+    resize(600, 600);
+    setWindowTitle(tr("Image"));
+    //setMouseTracking(true);
+        //centralWidget()->setMouseTracking(true);
 }
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -77,6 +91,13 @@ bool MainWindow::maybeExit()
 }
 void MainWindow::slot_im(QSize s)
 {
-    if(size()!=s)
-    this->resize(s);
+    int newHeight = height() - image->height();
+    int newWidth = width() - image->width() - bar->width();
+    image->resize(s);
+    //qDebug() << image->width() << image->height();
+    bar->resize(bar->width(),s.height());
+    this->resize(image->size().width()+newWidth+139, image->size().height()+newHeight);      //Уф...
+    /*QSize ss(s.width()+100, s.height()+100);
+    if(size()!=ss)
+    this->resize(ss);*/
 }

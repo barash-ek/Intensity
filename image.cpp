@@ -9,25 +9,30 @@
 #include <QQueue>
 #include <QList>
 #include <QPoint>
+#include <QFrame>
 Image::Image(QWidget *parent)
     : QWidget(parent)
 {
+    setMouseTracking(true);
     setAttribute(Qt::WA_StaticContents); //indicate that the widget contents are rooted to the top-left corner and don't change when the widget is resized.
-    this->setMouseTracking(true);
+    frameImage = new QFrame(this);
+    frameImage->setFrameStyle(QFrame::Box| QFrame::Plain);
+    frameImage->setLineWidth(2);
     createText();
+    resize(500, 500);
 }
 bool Image::openImage(const QString &fileName)
 {
+    //qDebug() << width() << height();
     QImage loadedImage;
     if (!loadedImage.load(fileName))
         return false;
     QSize size=loadedImage.size();
     sizePicture=size;
     emit signal_im(size);
-    QSize newSize = loadedImage.size().expandedTo(this->size());
     QImage convertedImage;
     convertedImage=loadedImage.QImage::convertToFormat(QImage::Format_Grayscale8);
-    resizeImage(&convertedImage, newSize);
+    resizeImage(&convertedImage, size);
     picture = convertedImage;
     open = true;
     update();
@@ -35,6 +40,7 @@ bool Image::openImage(const QString &fileName)
 }
 void Image::mouseMoveEvent(QMouseEvent *event)
 {
+    QWidget::mouseMoveEvent(event);
     if(open) //to hide Qlabel for initializing image
     {
         int a=valueIntensity(event->pos());
@@ -63,12 +69,13 @@ int Image::valueIntensity(const QPoint &pointIntensity)
 }
 void Image::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton) {
-    if(text->isVisible())
-        text->hide();
-    //qDebug()<<valueIntensity(event->pos());
-    //drawPoint(event->pos());
-    drawArea(event->pos());
+    if(open)
+    {
+        if (event->button() == Qt::LeftButton) {
+        if(text->isVisible())
+            text->hide();
+        drawArea(event->pos());
+    }
     }
 }
 /*void Image::drawPoint(const QPoint &pressPoint)                         !!!drawPoint!!!
@@ -169,6 +176,7 @@ void Image::drawArea(const QPoint &pressPoint)
 }
 void Image::resizeEvent(QResizeEvent *event)
 {
+     frameImage->resize(event->size());
      resizeImage(&picture, event->size());
      QWidget::resizeEvent(event);
 }
@@ -177,8 +185,8 @@ void Image::resizeImage(QImage *image, const QSize &newSize)
     QImage newImage(newSize, QImage::Format_Grayscale8);
     newImage.fill(qRgb(255, 255, 255));
     QPainter painter(&newImage);
-    int x=(width()-picture.width())/2;
-    int y=(height()-picture.height())/2;
+    int x=(width()-image->width())/2;
+    int y=(height()-image->height())/2;
     painter.drawImage(QPoint(x, y), *image);
     *image = newImage;
 }
@@ -206,6 +214,7 @@ void Image::createText()
 void Image::clearImage()
 {
     picture.fill(qRgb(255, 255, 255));
+    //pictureArea.fill(qRgb(255, 255, 255));
     open=false;
     if(text->isVisible())
         text->hide();
