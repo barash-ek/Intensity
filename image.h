@@ -2,7 +2,7 @@
 #define IMAGE_H
 #include <QWidget>
 #include <QLabel>
-#include <QFrame>
+class rightBar;
 
 class Image : public QWidget
 {
@@ -11,11 +11,13 @@ class Image : public QWidget
 public:
     Image(QWidget *parent = nullptr);
     bool openImage(const QString &fileName);
+    void getterTransparency(rightBar &bar);
+    void getterAccuracy(rightBar &bar);
+    void getterColor(rightBar &bar);
 signals:
     void signal_im(QSize s);
 public slots:
     void clearImage();
-
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
@@ -30,10 +32,15 @@ private:
     void createText();
     int valueIntensity(const QPoint &pointIntensity);
     QImage picture;
+    QImage convertedPicture;
     QImage pictureArea;
-    QFrame *frameImage;
     QSize sizePicture;
+    int xPicture, yPicture;
     bool open=false;
     QLabel *text;
+    QRect *ourRect;
+    int transparency;
+    QString accuracy;
+    QColor color;
 };
 #endif // IMAGE_H
