@@ -23,38 +23,26 @@ Image::Image(QWidget *parent)
 }
 bool Image::openImage(const QString &fileName)
 {
-    //qDebug() << width() << height();
     QImage loadedImage;
     if (!loadedImage.load(fileName))
         return false;
     QSize size=loadedImage.size();
-    sizePicture=size;
     emit signal_im(size);
-    QImage convertedImage;
-    convertedImage=loadedImage.QImage::convertToFormat(QImage::Format_Grayscale8);
-    convertedPicture = convertedImage;
-    resizeImage(&convertedImage, size);
-    picture = convertedImage;
-    open = true;
-    update();
+    loadedImage=loadedImage.QImage::convertToFormat(QImage::Format_Grayscale8);
+    picture = loadedImage;
     return true;
 }
 void Image::mouseMoveEvent(QMouseEvent *event)
 {
-    if(open) //to hide Qlabel for initializing image
+    int mouseX=event->x();
+    int mouseY=event->y();
+    int a=valueIntensity(event->pos());
+    if(a>=0)
     {
-        if(ourRect->contains(event->x(), event->y()))
-        {
-        int a=valueIntensity(event->pos());
-        if(a>=0)
-        {
-            //int intensity=valueIntensity(event->pos());
-            text->move(event->x()-12, event->y()+18);
-            text->setText(QString::number(a));
-            if(!text->isVisible())
-                text->show();
-        }
-        }
+        text->move(mouseX-12, mouseY+18);
+        text->setText(QString::number(a));
+        if(!text->isVisible())
+            text->show();
     }
 }
 int Image::valueIntensity(const QPoint &pointIntensity)
@@ -62,24 +50,25 @@ int Image::valueIntensity(const QPoint &pointIntensity)
     int x=pointIntensity.x();
     int y=pointIntensity.y();
     unsigned char *a;
+    if(x>=picture.width()||y>=picture.height())
+        return -1;
     a=picture.scanLine(y);
     int intens=-1;
     if(a)
-        intens=int(a[x]);
+        intens = int(a[x]);
     else
         qDebug() <<"a is a null pointer";
     return intens;
 }
 void Image::mousePressEvent(QMouseEvent *event)
 {
-    if(open)
+    if(event->x()<picture.width()&&event->y()<picture.height())
     {
-        if(ourRect->contains(event->x(), event->y()))
+        if (event->button() == Qt::LeftButton)
         {
-            if (event->button() == Qt::LeftButton) {
              if(text->isVisible())
-                 text->hide();
-            drawArea(event->pos());}
+              text->hide();
+             drawArea(event->pos());
         }
     }
 }
@@ -92,22 +81,24 @@ void Image::mousePressEvent(QMouseEvent *event)
 }*/
 void Image::drawArea(const QPoint &pressPoint)
 {
+    int pictureHeight = picture.height();
+    int pictureWidth = picture.width();
     QVector<QVector <int> > conditionPoint;
-    for(int i=0; i < sizePicture.height(); ++i)
+    for(int i=0; i < pictureHeight; ++i)
     {
          QVector<int> strVector;
-         for(int j=0; j < sizePicture.width(); ++j)
+         for(int j=0; j < pictureWidth; ++j)
              strVector.push_back(0);
          conditionPoint.push_back(strVector);
     }
-    conditionPoint[pressPoint.y()-yPicture][pressPoint.x()-xPicture]=1;
+    conditionPoint[pressPoint.y()][pressPoint.x()]=1;
     int mainIntensity=valueIntensity(pressPoint);
     int diff=3;
     QQueue<QPoint> pointsQueue;
     QVector<QPoint> pointsVector;
     pointsQueue.enqueue(QPoint(pressPoint.x(), pressPoint.y()));
     int x, y;
-    int startY=yPicture, startX=xPicture, endY=yPicture+sizePicture.height(), endX=xPicture+sizePicture.width();
+    int startY=0, startX=0, endY=pictureHeight, endX=pictureWidth;
     for(int i=0;i<pointsQueue.count();++i)
     {
         x=pointsQueue[i].x();
@@ -148,73 +139,35 @@ void Image::drawArea(const QPoint &pressPoint)
             pointsVector << QPoint(x,y-1) << QPoint(x+1, y) << QPoint(x, y+1) << QPoint(x-1, y);
         for(int it=0; it < pointsVector.count();++it)
         {
-            if(conditionPoint[pointsVector[it].y()-startY][pointsVector[it].x()-startX]==0)
+            if(conditionPoint[pointsVector[it].y()][pointsVector[it].x()]==0)
             {
                 if(abs(valueIntensity(pointsVector[it])-mainIntensity)<=diff)
                 {
-                    conditionPoint[pointsVector[it].y()-startY][pointsVector[it].x()-startX]=1;
+                    conditionPoint[pointsVector[it].y()][pointsVector[it].x()]=1;
                     pointsQueue.enqueue(pointsVector[it]);
                 }
                 else
-                    conditionPoint[pointsVector[it].y()-startY][pointsVector[it].x()-startX]=-1;
+                    conditionPoint[pointsVector[it].y()][pointsVector[it].x()]=-1;
             }
         }
         pointsVector.clear();                         //Вывод: ошибка выдается тогда, когда доходим до угловых точек!
     }
-    /*for(int i=0; i < sizePicture.height(); ++i)
-    {
-        qDebug() << conditionPoint[i];
-    }*/
-    QImage foundArea(picture.width(), picture.height(), QImage::Format_ARGB32);
+    QImage foundArea(pictureWidth, pictureHeight, QImage::Format_ARGB32);
     //int transp = rightBar::getterTransparency();
     QRgb transparent=qRgba(0, 0, 0, 0);
     QRgb redColor=qRgba(255, 0, 0, 255);
-    for(int i=0;i<foundArea.height();++i)
+    for(int i=0;i<pictureHeight;++i)
     {
-        for(int j=0;j<foundArea.width();++j)
-        {
-            foundArea.setPixel(j,i,transparent);
-        }
-    }
-    for(int i=0;i<sizePicture.height();++i)
-    {
-        for(int j=0;j<sizePicture.width();++j)
+        for(int j=0;j<pictureWidth;++j)
         {
             if(conditionPoint[i][j]==1)
-                foundArea.setPixel(j+startX,i+startY, redColor);
+                foundArea.setPixel(j,i, redColor);
+            else
+                foundArea.setPixel(j,i,transparent);
         }
     }
     pictureArea=foundArea;
     update(); //to evoke PainEvent
-}
-void Image::resizeEvent(QResizeEvent *event)
-{
-    if(width() < sizePicture.width() || height() < sizePicture.height())
-    {
-        resizeImage(&convertedPicture, sizePicture);
-    }
-    else
-     {
-        resizeImage(&picture, event->size());
-     }
-    QWidget::resizeEvent(event);
-    //qDebug() << xPicture << yPicture;
-}
-void Image::resizeImage(QImage *image, const QSize &newSize)
-{
-    QImage newImage(newSize, QImage::Format_Grayscale8);
-    newImage.fill(qRgb(255, 255, 255));
-    QPainter painter(&newImage);
-    //qDebug() << newSize.width() << newSize.height();
-    int x, y;
-    x=(newSize.width()-image->width())/2;
-    y=(newSize.height()-image->height())/2;
-
-    xPicture = abs(newSize.width()-sizePicture.width())/2;
-    yPicture = abs(newSize.height()-sizePicture.height())/2;
-    painter.drawImage(QPoint(x, y), *image);
-    ourRect = new QRect(xPicture, yPicture, sizePicture.width(), sizePicture.height()); // неправильно рисует при увеличенииБ правая сторона блокируется
-    *image = newImage;
 }
 void Image::paintEvent(QPaintEvent *event)
 {
@@ -237,15 +190,6 @@ void Image::createText()
     text->setStyleSheet("background-color: white");
     //text->setStyleSheet("color: red");
     text->hide();
-}
-void Image::clearImage()
-{
-    picture.fill(qRgb(255, 255, 255));
-    //pictureArea.fill(qRgb(255, 255, 255));
-    open=false;
-    if(text->isVisible())
-        text->hide();
-    update();
 }
 void Image::getterTransparency(rightBar &bar)
 {

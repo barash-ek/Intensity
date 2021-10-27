@@ -62,11 +62,6 @@ void MainWindow::createActions()
     exitAct = new QAction(tr("Exit"), this);
     exitAct->setShortcuts(QKeySequence::Quit); //changes!!
     connect(exitAct, &QAction::triggered, this, &MainWindow::close);
-
-    clearScreenAct = new QAction(tr("&Clear"), this);
-    clearScreenAct->setShortcut(tr("Ctrl+L"));
-    connect(clearScreenAct, &QAction::triggered,
-            image, &Image::clearImage);
 }
 void MainWindow::createMenus()
 {
@@ -74,7 +69,6 @@ void MainWindow::createMenus()
     fileMenu = new QMenu(tr("&File"), this);
     fileMenu->addAction(openAct);
     fileMenu->addSeparator();
-    fileMenu->addAction(clearScreenAct);
     fileMenu->addAction(exitAct);
 
     menuBar()->addMenu(fileMenu);
