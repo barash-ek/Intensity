@@ -1,8 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-#include "image.h"
+#include "imagewidget.h"
 #include "rightbar.h"
-//#include "clickablelabel.h"
 #include <QWidget>
 #include <QMenu>
 #include <QMainWindow>
@@ -16,14 +15,14 @@ protected:
 
 private slots:
     void open();
-    void slot_im(QSize s);
+    void slotWidget(QSize s);
 
 private:
     void createActions();
     void createMenus();
     bool maybeExit();
-    Image *image;
-    rightBar *bar;
+    ImageWidget *widget;
+    RightBar *bar;
     QMenu *fileMenu;
     QAction *openAct;
     QAction *exitAct;

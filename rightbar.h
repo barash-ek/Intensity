@@ -1,34 +1,45 @@
 #ifndef RIGHTBAR_H
 #define RIGHTBAR_H
 #include "image.h"
+#include "imagewidget.h"
 #include <QWidget>
 #include <QLabel>
 #include <QSlider>
-#include <QLineEdit>
+#include <QSpinBox>
 #include <QPushButton>
+#include<QVBoxLayout>
 
-class rightBar: public QWidget
+class RightBar: public QWidget
 {
     Q_OBJECT
+
 public:
-    rightBar(QWidget *parent = nullptr);
-    friend void Image::getterTransparency(rightBar &bar);
-    friend void Image::getterAccuracy(rightBar &bar);
-    friend void Image::getterColor(rightBar &bar);
-protected:
-    void resizeEvent(QResizeEvent *event) override;
-private slots:
-    void getTransparency(int a);
-    void getAccuracy();
-    void colorDialog();
+    RightBar(QWidget *parent = nullptr);
+    void setInitialValueSlider(int a);
+    void setInitialValueLine(int a);
+
+signals:
+    void signalSlider(int a);
+    void signalColor();
+    void accuracyChanged(int a);
+
+public slots:
+    void setValueIntensity(int a);
+
 private:
-    QLabel *transparency, *intensity;
+    void createIntensity();
+    void createSlider();
+    void createLine();
+    void createButton();
+    QLabel *transparency, *accuracy, *intensity, *valueIntensity;
     QSlider *sliderTransparency;
-    QLineEdit *lineIntensity;
+    QSpinBox *lineIntensity;
     QPushButton *colorChoice;
-    QColor colorChosen;
-    QString accuracy;
-    int valueTransparency;
+    QVBoxLayout *layoutRightBar;
+    QHBoxLayout *layoutLabel;
+    QHBoxLayout *layoutLine;
+
+//friend void ImageWidget::userAccuracy(RightBar &A);
 };
 
 #endif // RIGHTBAR_H

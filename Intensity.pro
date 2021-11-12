@@ -6,11 +6,15 @@ CONFIG += c++11
 
 HEADERS += \
     image.h \
+    imagearea.h \
+    imagewidget.h \
     mainwindow.h \
     rightbar.h
 
 SOURCES += \
     image.cpp \
+    imagearea.cpp \
+    imagewidget.cpp \
     main.cpp \
     mainwindow.cpp \
     rightbar.cpp

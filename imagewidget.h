@@ -1,0 +1,41 @@
+#ifndef WIDGET_H
+#define WIDGET_H
+#include "image.h"
+#include "imagearea.h"
+#include <QWidget>
+#include <QLabel>
+
+class ImageWidget: public QWidget
+{
+    Q_OBJECT
+
+public:
+    ImageWidget(QWidget *parent = nullptr);
+    void openImage(const QString &fileName);
+    int getTransparency();
+    int getAccuracy();
+signals:
+    void mouseMoved(int a);
+    void signalWidget(QSize s);
+
+public slots:
+    void userTransparency(int a);
+    void userColor();
+    void userAccuracy(int a);
+
+protected:
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    Image image;
+    ImageArea area;
+    QImage areaImage;
+    int xMouse, yMouse;
+    int transparency;
+    QColor color;
+    int accuracy;
+};
+
+#endif // WIDGET_H

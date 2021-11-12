@@ -1,17 +1,43 @@
 #include "rightbar.h"
-#include <QHBoxLayout>
-#include <QColorDialog>
+#include<QVBoxLayout>
+#include <QIntValidator>
+#include <QSignalMapper>
 #include <QDebug>
-#include <QPalette>
-#include <QResizeEvent>
-#include <QLayout>
-#include <QString>
-rightBar::rightBar(QWidget *parent) : QWidget(parent)
+RightBar::RightBar(QWidget *parent) : QWidget(parent), transparency(0x0), accuracy(0x0), intensity(0x0),
+    valueIntensity(0x0), sliderTransparency(0x0), lineIntensity(0x0), colorChoice(0x0),
+    layoutRightBar(0x0), layoutLabel(0x0), layoutLine(0x0)
 {
     setAttribute(Qt::WA_StaticContents);
+
+    createIntensity();
+    createSlider();
+    createLine();
+    createButton();
+
+    layoutRightBar = new QVBoxLayout;
+    layoutRightBar->addLayout(layoutLabel);
+    layoutRightBar->addWidget(transparency);
+    layoutRightBar->addWidget(sliderTransparency);
+    layoutRightBar->addLayout(layoutLine);
+    layoutRightBar->addWidget(colorChoice);
+    layoutRightBar->addStretch();
+    setLayout(layoutRightBar);
+}
+void RightBar::createIntensity()
+{
+    intensity = new QLabel("Интенсивность:");
+    intensity->setAlignment(Qt::AlignLeft);
+    valueIntensity = new QLabel;
+    valueIntensity->setFixedWidth(20);
+
+    layoutLabel = new QHBoxLayout;
+    layoutLabel->addWidget(intensity);
+    layoutLabel->addWidget(valueIntensity);
+}
+void RightBar::createSlider()
+{
     transparency = new QLabel("Прозрачность:");
-    transparency->setAlignment(Qt::AlignCenter);
-    transparency->setFixedHeight(50);
+    transparency->setAlignment(Qt::AlignLeft);
     sliderTransparency=new QSlider(Qt::Horizontal);
     sliderTransparency->setStyleSheet("QSlider::groove:horizontal {"
                         "border: 1px solid #999999;"
@@ -28,63 +54,36 @@ rightBar::rightBar(QWidget *parent) : QWidget(parent)
                             "border-radius: 3px;"
                     "}");
     sliderTransparency->setRange(0, 255);
-    sliderTransparency->setValue(255);
     sliderTransparency->setSingleStep(1);
-    connect(sliderTransparency, SIGNAL(sliderMoved(int)), this, SLOT(getTransparency(int)));
+    connect(sliderTransparency, SIGNAL(sliderMoved(int)), this, SIGNAL(signalSlider(int)));
+}
+void RightBar::createLine()
+{
+    accuracy = new QLabel("Точность:");
+    lineIntensity = new QSpinBox;
+    lineIntensity->setMinimum(0);
+    lineIntensity->setMaximum(255);
 
-    QVBoxLayout *layoutSlider = new QVBoxLayout;
-    layoutSlider->addWidget(transparency);
-    layoutSlider->setSpacing(0);
-    layoutSlider->addWidget(sliderTransparency);
-    //setLayout(layoutSlider);
+    layoutLine = new QHBoxLayout;
+    layoutLine->addWidget(accuracy);
+    layoutLine->addWidget(lineIntensity);
 
-    intensity = new QLabel("Точность:"); //validator!
-    lineIntensity = new QLineEdit;
-    lineIntensity->setMaxLength(3);
-    lineIntensity->setFixedWidth(30);
-    lineIntensity->setText(QString::number(3));
-    connect(lineIntensity, SIGNAL(editingFinished()), this, SLOT(getAccuracy()));
-
-    QVBoxLayout *layoutLine = new QVBoxLayout;
-    QVBoxLayout *layline = new QVBoxLayout;
-    layline->QLayout::setContentsMargins(30, 0, 30, 0);
-    layline->addWidget(lineIntensity);
-    layoutLine->addWidget(intensity);
-    layoutLine->setSpacing(0);
-    layoutLine->addLayout(layline);
-    //setLayout(layoutLine);
-
+    connect(lineIntensity, SIGNAL(valueChanged(int)), this, SIGNAL(accuracyChanged(int)));
+}
+void RightBar::createButton()
+{
     colorChoice = new QPushButton("Выбор цвета...");
-    //colorChoice->setFlat(true);
-    connect(colorChoice, SIGNAL(clicked()), this, SLOT(colorDialog()));
-
-    QVBoxLayout *layoutRightBar = new QVBoxLayout;
-    layoutRightBar->addLayout(layoutSlider);
-    layoutRightBar->setSpacing(1);
-    layoutRightBar->addLayout(layoutLine);
-    layoutRightBar->setSpacing(10);
-    layoutRightBar->addWidget(colorChoice);
-    layoutRightBar->QLayout::setContentsMargins(5, 0, 5, 400);
-    setLayout(layoutRightBar);
-    resize(100, 500);
+    connect(colorChoice, SIGNAL(clicked()), this, SIGNAL(signalColor()));
 }
-void rightBar::resizeEvent(QResizeEvent *event)
+void RightBar::setValueIntensity(int a)
 {
-    QWidget::resizeEvent(event);
+    valueIntensity->setText(QString::number(a));
 }
-void rightBar::colorDialog()
+void RightBar::setInitialValueSlider(int a)
 {
-    QColor color = QColorDialog::getColor("red");
-    if (color.isValid() ) {
-    colorChosen = color;
-    }
+    sliderTransparency->setValue(a);
 }
-void rightBar::getAccuracy()
+void RightBar::setInitialValueLine(int a)
 {
-    //if(accuracy!=lineIntensity->text())
-    accuracy = lineIntensity->text();
-}
-void rightBar::getTransparency(int a)
-{
-    valueTransparency = a;
+    lineIntensity->setValue(a);
 }
