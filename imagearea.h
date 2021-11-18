@@ -13,6 +13,7 @@ public:
     ImageArea();
     ImageArea(const Image &picture, const QPoint &point, int a);
     QImage drawArea(const QColor &color);
+    void addPoints(QVector<QPoint> &a, int x, int y);
 };
 
 #endif // IMAGEAREA_H
