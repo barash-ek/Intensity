@@ -2,12 +2,6 @@
 #define RIGHTBAR_H
 #include "image.h"
 #include "imagewidget.h"
-#include <QWidget>
-#include <QLabel>
-#include <QSlider>
-#include <QSpinBox>
-#include <QPushButton>
-#include<QVBoxLayout>
 
 class RightBar: public QWidget
 {
@@ -25,6 +19,7 @@ signals:
 
 public slots:
     void setValueIntensity(int a);
+    void setEnabledSpinBox(bool condition);
 
 private:
     void createIntensity();

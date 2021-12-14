@@ -2,8 +2,6 @@
 #define WIDGET_H
 #include "image.h"
 #include "imagearea.h"
-#include <QWidget>
-#include <QLabel>
 
 class ImageWidget: public QWidget
 {
@@ -17,6 +15,7 @@ public:
 signals:
     void mouseMoved(int a);
     void signalWidget(QSize s);
+    void signalSetEnabled(bool condition);
 
 public slots:
     void userTransparency(int a);

@@ -1,8 +1,5 @@
 #include "rightbar.h"
-#include<QVBoxLayout>
-#include <QIntValidator>
-#include <QSignalMapper>
-#include <QDebug>
+
 RightBar::RightBar(QWidget *parent) : QWidget(parent), transparency(0x0), accuracy(0x0), intensity(0x0),
     valueIntensity(0x0), sliderTransparency(0x0), lineIntensity(0x0), colorChoice(0x0),
     layoutRightBar(0x0), layoutLabel(0x0), layoutLine(0x0)
@@ -86,4 +83,8 @@ void RightBar::setInitialValueSlider(int a)
 void RightBar::setInitialValueLine(int a)
 {
     lineIntensity->setValue(a);
+}
+void RightBar::setEnabledSpinBox(bool condition)
+{
+    lineIntensity->setEnabled(condition);
 }

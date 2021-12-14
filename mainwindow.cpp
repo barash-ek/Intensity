@@ -1,16 +1,6 @@
 #include "mainwindow.h"
 #include "imagewidget.h"
 #include "rightbar.h"
-#include <QHBoxLayout>
-#include <QMainWindow>
-#include <QCloseEvent>
-#include <QFileDialog>
-#include <QColorDialog>
-#include <QMessageBox>
-#include <QApplication>
-#include <QMenuBar>
-#include <QDebug>
-#include <QFrame>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), widget(new ImageWidget(this)), bar(new RightBar(this)), fileMenu(0x0), openAct(0x0), exitAct(0x0)
@@ -41,6 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(bar, SIGNAL(signalColor()), widget, SLOT(userColor()));
     connect(bar, SIGNAL(accuracyChanged(int)), widget, SLOT(userAccuracy(int)));
     connect(widget, SIGNAL(mouseMoved(int)), bar, SLOT(setValueIntensity(int)));
+
+    connect(widget, SIGNAL(signalSetEnabled(bool)), bar, SLOT(setEnabledSpinBox(bool)));
 }
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -86,7 +78,7 @@ bool MainWindow::maybeExit()
             return true;
         else if (ret == QMessageBox::No)
             return false;
-    return false; //in order to stay
+    return false;
 }
 void MainWindow::slotWidget(QSize s)
 {

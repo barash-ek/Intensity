@@ -2,9 +2,7 @@
 #define MAINWINDOW_H
 #include "imagewidget.h"
 #include "rightbar.h"
-#include <QWidget>
-#include <QMenu>
-#include <QMainWindow>
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

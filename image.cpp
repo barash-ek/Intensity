@@ -1,5 +1,4 @@
 #include "image.h"
-#include <QDebug>
 
 Image::Image()
 {}

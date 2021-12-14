@@ -1,8 +1,4 @@
 #include "imagewidget.h"
-#include <QMouseEvent>
-#include <QPainter>
-#include <QColorDialog>
-#include <QDebug>
 
 ImageWidget::ImageWidget(QWidget *parent): QWidget(parent), xMouse(-1), yMouse(-1), transparency(255), color(255, 0, 0, transparency), accuracy(10)
 {
@@ -75,6 +71,7 @@ void ImageWidget::userColor()
 }
 void ImageWidget::userAccuracy(int a)
 {
+    emit signalSetEnabled(false);
     accuracy = a;
     if(xMouse >= 0 && yMouse >= 0)
     {
@@ -84,6 +81,7 @@ void ImageWidget::userAccuracy(int a)
             areaImage = area.drawArea(color);
         update();
     }
+    emit signalSetEnabled(true);
 }
 int ImageWidget::getTransparency()
 {
