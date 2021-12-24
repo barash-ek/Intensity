@@ -2,6 +2,7 @@
 #define WIDGET_H
 #include "image.h"
 #include "imagearea.h"
+#include "contour.h"
 
 class ImageWidget: public QWidget
 {
@@ -12,6 +13,7 @@ public:
     void openImage(const QString &fileName);
     int getTransparency();
     int getAccuracy();
+    int getFallibility();
 signals:
     void mouseMoved(int a);
     void signalWidget(QSize s);
@@ -19,6 +21,7 @@ signals:
 
 public slots:
     void userTransparency(int a);
+    void userFallibility(int a);
     void userColor();
     void userAccuracy(int a);
 
@@ -30,11 +33,13 @@ protected:
 private:
     Image image;
     ImageArea area;
+    Contour contour;
     QImage areaImage;
     int xMouse, yMouse;
     int transparency;
     QColor color;
     int accuracy;
+    int fallibility;
 };
 
 #endif // WIDGET_H

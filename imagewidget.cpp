@@ -1,6 +1,7 @@
 #include "imagewidget.h"
+#include "contour.h"
 
-ImageWidget::ImageWidget(QWidget *parent): QWidget(parent), xMouse(-1), yMouse(-1), transparency(255), color(255, 0, 0, transparency), accuracy(10)
+ImageWidget::ImageWidget(QWidget *parent): QWidget(parent), xMouse(-1), yMouse(-1), transparency(255), color(255, 0, 0, transparency), accuracy(10), fallibility(10)
 {
     setMouseTracking(true);
     setAttribute(Qt::WA_StaticContents);
@@ -11,11 +12,11 @@ void ImageWidget::openImage(const QString &fileName)
     image = openImage;
     QSize size = image.getImage().size();
     emit signalWidget(size);
-    if(!areaImage.isNull())
+    /*if(!areaImage.isNull())
     {
         QImage newArea;
         areaImage = newArea;
-    }
+    }*/
 }
 void ImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
@@ -39,6 +40,9 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
             yMouse = y;
             ImageArea clickedArea(image, QPoint(xMouse, yMouse), accuracy);
             area = clickedArea;
+            Contour contourNew(area);
+            contour = contourNew;
+            contour.buildApproximation(fallibility);
             areaImage = area.drawArea(color);
             update();
         }
@@ -47,8 +51,18 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
 void ImageWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
+    painter.setPen(QPen(Qt::blue));
+    //painter.setRenderHint(QPainter::Antialiasing, true);
     painter.drawImage(QPoint(0,0), image.getImage());
     painter.drawImage(QPoint(0,0), areaImage);
+
+    //painter.drawPolyline(area.getPoints());
+    QVector<QPoint> points = contour.getPointsApproximation();
+    for(int i = 0 ; i < (points.size() - 1); ++i)
+        painter.drawLine(points[i], points[i + 1]);
+    painter.setPen(QPen(Qt::magenta));
+    for(int i = 0; i < points.size(); ++i)
+        painter.drawPoint(points[i]);
 }
 void ImageWidget::userTransparency(int a)
 {
@@ -56,6 +70,21 @@ void ImageWidget::userTransparency(int a)
    color.setAlpha(transparency);
    areaImage = area.drawArea(color);
    update();
+}
+void ImageWidget::userFallibility(int a)
+{
+    fallibility = a;
+    if(xMouse >= 0 && yMouse >= 0)
+    {
+        ImageArea clickedArea(image, QPoint(xMouse, yMouse), accuracy);
+        area = clickedArea;
+        Contour contourNew(area);
+        contour = contourNew;
+        contour.buildApproximation(fallibility);
+        if(!areaImage.isNull())
+            areaImage = area.drawArea(color);
+        update();
+    }
 }
 void ImageWidget::userColor()
 {
@@ -77,6 +106,9 @@ void ImageWidget::userAccuracy(int a)
     {
         ImageArea chosenArea(image, QPoint(xMouse, yMouse), accuracy);
         area = chosenArea;
+        Contour contourNew(area);
+        contour = contourNew;
+        contour.buildApproximation(fallibility);
         if(!areaImage.isNull())
             areaImage = area.drawArea(color);
         update();
@@ -90,4 +122,8 @@ int ImageWidget::getTransparency()
 int ImageWidget::getAccuracy()
 {
     return accuracy;
+}
+int ImageWidget::getFallibility()
+{
+    return fallibility;
 }

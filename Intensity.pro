@@ -9,6 +9,7 @@ CONFIG += \
 PRECOMPILED_HEADER = pch.h
 
 HEADERS += \
+    contour.h \
     image.h \
     imagearea.h \
     imagewidget.h \
@@ -17,6 +18,7 @@ HEADERS += \
     rightbar.h
 
 SOURCES += \
+    contour.cpp \
     image.cpp \
     imagearea.cpp \
     imagewidget.cpp \

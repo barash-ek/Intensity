@@ -25,9 +25,11 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(tr("Image"));
 
     bar->setInitialValueSlider(widget->getTransparency());
-    bar->setInitialValueLine(widget->getAccuracy());
+    bar->setInitialValueAccuracy(widget->getAccuracy());
+    bar->setInitialValueFallibility((widget->getFallibility()));
 
-    connect(bar, SIGNAL(signalSlider(int)), widget, SLOT(userTransparency(int)));
+    connect(bar, SIGNAL(signalSliderTransparency(int)), widget, SLOT(userTransparency(int)));
+    connect(bar, SIGNAL(signalFallibility(int)), widget, SLOT(userFallibility(int)));
     connect(bar, SIGNAL(signalColor()), widget, SLOT(userColor()));
     connect(bar, SIGNAL(accuracyChanged(int)), widget, SLOT(userAccuracy(int)));
     connect(widget, SIGNAL(mouseMoved(int)), bar, SLOT(setValueIntensity(int)));

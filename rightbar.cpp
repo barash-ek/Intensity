@@ -1,21 +1,24 @@
 #include "rightbar.h"
 
-RightBar::RightBar(QWidget *parent) : QWidget(parent), transparency(0x0), accuracy(0x0), intensity(0x0),
-    valueIntensity(0x0), sliderTransparency(0x0), lineIntensity(0x0), colorChoice(0x0),
-    layoutRightBar(0x0), layoutLabel(0x0), layoutLine(0x0)
+RightBar::RightBar(QWidget *parent) : QWidget(parent), transparency(0x0), accuracy(0x0), intensity(0x0), valueIntensity(0x0), fallibility(0x0),
+    valueTransparency(0x0), valueFallibility(0x0), valueAccuracy(0x0), colorChoice(0x0),layoutRightBar(0x0), layoutLabel(0x0)
 {
     setAttribute(Qt::WA_StaticContents);
 
     createIntensity();
-    createSlider();
+    createSliderTranparency();
+    createFallibility();
     createLine();
     createButton();
 
     layoutRightBar = new QVBoxLayout;
     layoutRightBar->addLayout(layoutLabel);
     layoutRightBar->addWidget(transparency);
-    layoutRightBar->addWidget(sliderTransparency);
-    layoutRightBar->addLayout(layoutLine);
+    layoutRightBar->addWidget(valueTransparency);
+    layoutRightBar->addWidget(fallibility);
+    layoutRightBar->addWidget(valueFallibility);
+    layoutRightBar->addWidget(accuracy);
+    layoutRightBar->addWidget(valueAccuracy);
     layoutRightBar->addWidget(colorChoice);
     layoutRightBar->addStretch();
     setLayout(layoutRightBar);
@@ -31,12 +34,12 @@ void RightBar::createIntensity()
     layoutLabel->addWidget(intensity);
     layoutLabel->addWidget(valueIntensity);
 }
-void RightBar::createSlider()
+void RightBar::createSliderTranparency()
 {
     transparency = new QLabel("Прозрачность:");
     transparency->setAlignment(Qt::AlignLeft);
-    sliderTransparency=new QSlider(Qt::Horizontal);
-    sliderTransparency->setStyleSheet("QSlider::groove:horizontal {"
+    valueTransparency = new QSlider(Qt::Horizontal);
+    valueTransparency->setStyleSheet("QSlider::groove:horizontal {"
                         "border: 1px solid #999999;"
                         "height: 4px;"
                         "width: 90px;"
@@ -50,22 +53,30 @@ void RightBar::createSlider()
                             "margin: -8px 0;"
                             "border-radius: 3px;"
                     "}");
-    sliderTransparency->setRange(0, 255);
-    sliderTransparency->setSingleStep(1);
-    connect(sliderTransparency, SIGNAL(sliderMoved(int)), this, SIGNAL(signalSlider(int)));
+    valueTransparency->setRange(0, 255);
+    valueTransparency->setSingleStep(1);
+    connect(valueTransparency, SIGNAL(sliderMoved(int)), this, SIGNAL(signalSliderTransparency(int)));
+}
+void RightBar::createFallibility()
+{
+    fallibility = new QLabel("Погрешность (для контура):");
+    fallibility->setAlignment(Qt::AlignLeft);
+    valueFallibility = new QSpinBox;
+    valueFallibility->setFixedWidth(50);
+    valueFallibility->setMinimum(0);
+    valueFallibility->setMaximum(1000);
+
+    connect(valueFallibility, SIGNAL(valueChanged(int)), this, SIGNAL(signalFallibility(int)));
 }
 void RightBar::createLine()
 {
-    accuracy = new QLabel("Точность:");
-    lineIntensity = new QSpinBox;
-    lineIntensity->setMinimum(0);
-    lineIntensity->setMaximum(255);
+    accuracy = new QLabel("Точность (для области):");
+    valueAccuracy = new QSpinBox;
+    valueAccuracy->setFixedWidth(50);
+    valueAccuracy->setMinimum(0);
+    valueAccuracy->setMaximum(255);
 
-    layoutLine = new QHBoxLayout;
-    layoutLine->addWidget(accuracy);
-    layoutLine->addWidget(lineIntensity);
-
-    connect(lineIntensity, SIGNAL(valueChanged(int)), this, SIGNAL(accuracyChanged(int)));
+    connect(valueAccuracy, SIGNAL(valueChanged(int)), this, SIGNAL(accuracyChanged(int)));
 }
 void RightBar::createButton()
 {
@@ -78,13 +89,17 @@ void RightBar::setValueIntensity(int a)
 }
 void RightBar::setInitialValueSlider(int a)
 {
-    sliderTransparency->setValue(a);
+    valueTransparency->setValue(a);
 }
-void RightBar::setInitialValueLine(int a)
+void RightBar::setInitialValueAccuracy(int a)
 {
-    lineIntensity->setValue(a);
+    valueAccuracy->setValue(a);
+}
+void RightBar::setInitialValueFallibility(int a)
+{
+    valueFallibility->setValue(a);
 }
 void RightBar::setEnabledSpinBox(bool condition)
 {
-    lineIntensity->setEnabled(condition);
+    valueAccuracy->setEnabled(condition);
 }

@@ -10,10 +10,12 @@ class RightBar: public QWidget
 public:
     RightBar(QWidget *parent = nullptr);
     void setInitialValueSlider(int a);
-    void setInitialValueLine(int a);
+    void setInitialValueAccuracy(int a);
+    void setInitialValueFallibility(int a);
 
 signals:
-    void signalSlider(int a);
+    void signalSliderTransparency(int a);
+    void signalFallibility(int a);
     void signalColor();
     void accuracyChanged(int a);
 
@@ -23,16 +25,17 @@ public slots:
 
 private:
     void createIntensity();
-    void createSlider();
+    void createSliderTranparency();
+    void createFallibility();
     void createLine();
     void createButton();
-    QLabel *transparency, *accuracy, *intensity, *valueIntensity;
-    QSlider *sliderTransparency;
-    QSpinBox *lineIntensity;
+    QLabel *transparency, *accuracy, *intensity, *valueIntensity, *fallibility;
+    QSlider *valueTransparency;
+    QSpinBox *valueFallibility;
+    QSpinBox *valueAccuracy;
     QPushButton *colorChoice;
     QVBoxLayout *layoutRightBar;
     QHBoxLayout *layoutLabel;
-    QHBoxLayout *layoutLine;
 
 //friend void ImageWidget::userAccuracy(RightBar &A);
 };
