@@ -25,7 +25,7 @@ private:
 public:
     Contour();
     Contour(ImageArea &area);
-    void buildApproximation(const int &fallibility);
+    void buildApproximation(int fallibility);
     QVector<QPoint>& getPointsApproximation();
 };
 

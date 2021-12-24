@@ -215,7 +215,7 @@ QPoint& Contour::findExternalPoint(int xMain, int yMain, QPoint &firstPoint, QPo
     }
     return firstPoint;
 }
-void Contour::buildApproximation(const int &fallibility)
+void Contour::buildApproximation(int fallibility)
 {
     if(!pointsContour.isEmpty())
     {
@@ -226,22 +226,23 @@ void Contour::buildApproximation(const int &fallibility)
         {
             differenceX = 0;
             differenceY = 0;
-            while((qPow((qreal)differenceX, 2) + qPow((qreal)differenceY, 2) <= fallibility) && (i != (pointsContour.size() - 1)))
+            while((qPow((qreal)differenceX, 2) + qPow((qreal)differenceY, 2) <= qPow((qreal)fallibility, 2)) && (i != (pointsContour.size() - 1)))
             {
                 ++i;
                 differenceX = chosenPoints[j].x() - pointsContour[i].x();
                 differenceY = chosenPoints[j].y() - pointsContour[i].y();
             }
-            chosenPoints << pointsContour[i - 1];
-            (*conditionPoint)[chosenPoints[j].y()][chosenPoints[j].x()] = 5;
+            if(i != (pointsContour.size() - 1))
+                chosenPoints << pointsContour[i - 1];
             ++j;
         }
+        chosenPoints << pointsContour[0];
         QFile fileOut("contourApproximation.json");
         fileOut.open(QIODevice::WriteOnly | QIODevice::Text);
         QTextStream writeStream(&fileOut);
         for(int i = 0; i < chosenPoints.size(); i++)
             writeStream << chosenPoints[i].x() << " " << -chosenPoints[i].y() << "\n";
-        writeStream << chosenPoints[0].x() << " " << -chosenPoints[0].y() << "\n";
+        //writeStream << chosenPoints[0].x() << " " << -chosenPoints[0].y() << "\n";
         fileOut.close();
     }
 }

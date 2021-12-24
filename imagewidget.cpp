@@ -60,7 +60,7 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     QVector<QPoint> points = contour.getPointsApproximation();
     for(int i = 0 ; i < (points.size() - 1); ++i)
         painter.drawLine(points[i], points[i + 1]);
-    painter.setPen(QPen(Qt::magenta));
+    painter.setPen(QPen(Qt::magenta, 3));
     for(int i = 0; i < points.size(); ++i)
         painter.drawPoint(points[i]);
 }
