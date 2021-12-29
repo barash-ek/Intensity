@@ -12,11 +12,10 @@ void ImageWidget::openImage(const QString &fileName)
     image = openImage;
     QSize size = image.getImage().size();
     emit signalWidget(size);
-    /*if(!areaImage.isNull())
-    {
-        QImage newArea;
-        areaImage = newArea;
-    }*/
+    QImage newArea;
+    areaImage = newArea;
+    Contour newContour;
+    contour = newContour;
 }
 void ImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
@@ -50,6 +49,7 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
 }
 void ImageWidget::paintEvent(QPaintEvent *event)
 {
+    Q_UNUSED(event);
     QPainter painter(this);
     painter.setPen(QPen(Qt::blue));
     //painter.setRenderHint(QPainter::Antialiasing, true);
@@ -60,7 +60,7 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     QVector<QPoint> points = contour.getPointsApproximation();
     for(int i = 0 ; i < (points.size() - 1); ++i)
         painter.drawLine(points[i], points[i + 1]);
-    painter.setPen(QPen(Qt::magenta, 3));
+    painter.setPen(QPen(Qt::magenta));
     for(int i = 0; i < points.size(); ++i)
         painter.drawPoint(points[i]);
 }

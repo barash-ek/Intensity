@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QtMath>
+#include <QVector2D>
 
 Contour::Contour()
 {}
@@ -35,8 +36,8 @@ Contour::Contour(ImageArea &area): conditionPoint(0x0)
         (*conditionPoint)[y][x] = ArrangeContour;
         do
         {
-            area.addPointsFront(pointsAuxiliary, x, y);
-            area.addPointsDiagonal(pointsAuxiliary, x, y);
+            area.addPointsFront(pointsAuxiliary, x, y, imageWidth, imageHeight);
+            area.addPointsDiagonal(pointsAuxiliary, x, y, imageWidth, imageHeight);
             findAppropriateNeigbours(pointsAuxiliary, pointsState, pointsNeigbour, x, y);
             quantityNeigbours = pointsNeigbour.size();
             if(quantityNeigbours == 1)
@@ -236,7 +237,7 @@ void Contour::buildApproximation(int fallibility)
                 chosenPoints << pointsContour[i - 1];
             ++j;
         }
-        chosenPoints << pointsContour[0];
+        chosenPoints << chosenPoints[0];
         QFile fileOut("contourApproximation.json");
         fileOut.open(QIODevice::WriteOnly | QIODevice::Text);
         QTextStream writeStream(&fileOut);

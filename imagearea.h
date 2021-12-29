@@ -22,12 +22,12 @@ private:
 public:
     ImageArea();
     ImageArea(const Image &picture, const QPoint &point, int a);
-    void setFallibility(int &a);
+    void setFallibility(int a);
     Image& getImageObject();
     QVector<QVector <int> >* getconditionPoint();
     QImage drawArea(const QColor &color);
-    void addPointsFront(QVector<QPoint> &a, int x, int y);
-    void addPointsDiagonal(QVector<QPoint> &a, int x, int y);
+    static void addPointsFront(QVector<QPoint> &a, int x, int y, int width, int height);
+    static void addPointsDiagonal(QVector<QPoint> &a, int x, int y, int width, int height);
 };
 
 #endif // IMAGEAREA_H

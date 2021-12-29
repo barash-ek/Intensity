@@ -23,7 +23,7 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
     {
         x = pointsQueue[i].x();
         y = pointsQueue[i].y();
-        addPointsFront(pointsVector, x, y);
+        addPointsFront(pointsVector, x, y, imageWidth, imageHeight);
         // Выделение области
         for(int it = 0; it < pointsVector.size();++it)
         {
@@ -63,8 +63,8 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
             k = 0;
             if(conditionPoint[i][j] == OuterArea)
             {
-                addPointsFront(pointsVector, j, i);
-                addPointsDiagonal(pointsVector, j, i);
+                addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
+                addPointsDiagonal(pointsVector, j, i, imageWidth, imageHeight);
                 for(int it = 0; it < pointsVector.size(); ++it)
                 {
                     if(conditionPoint[pointsVector[it].y()][pointsVector[it].x()] == NoState)
@@ -83,7 +83,7 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
                 {
                     if(conditionPoint[i][j] == InnerArea || conditionPoint[i][j] == InnerVoid)
                     {
-                        addPointsFront(pointsVector, j, i);
+                        addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
                         for(int it = 0; it < pointsVector.size(); ++it)
                         {
                             if(conditionPoint[pointsVector[it].y()][pointsVector[it].x()] == OuterArea)
@@ -103,8 +103,8 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
                 {
                     if(conditionPoint[i][j] == ContourPoint)
                     {
-                        addPointsFront(pointsVector, j, i);
-                        addPointsDiagonal(pointsVector, j, i);
+                        addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
+                        addPointsDiagonal(pointsVector, j, i, imageWidth, imageHeight);
                         for(int it = 0; it < pointsVector.size(); ++it)
                         {
                             if(conditionPoint[pointsVector[it].y()][pointsVector[it].x()] == InnerArea)
@@ -131,50 +131,48 @@ QImage ImageArea::drawArea(const QColor &color)
     {
         for(int j = 0; j < imageWidth; ++j)
         {
-            if(conditionPoint[i][j] == InnerArea)
+            /*if(conditionPoint[i][j] == InnerArea)
                 foundArea.setPixelColor(j, i, color);
-            /*else if(conditionPoint[i][j] == ArrangeContour)
+            else if(conditionPoint[i][j] == ArrangeContour)
                 foundArea.setPixelColor(j, i, Qt::green);
             else if(conditionPoint[i][j] == ContourPoint)
                 foundArea.setPixelColor(j, i, Qt::blue);
             else if(conditionPoint[i][j] == InnerVoid)
                 foundArea.setPixelColor(j, i, Qt::yellow);
             else*/
-            else
                 foundArea.setPixelColor(j, i,transparentColor);
         }
     }
     return foundArea;
 }
-void ImageArea::addPointsFront(QVector<QPoint> &a, int x, int y)
+void ImageArea::addPointsFront(QVector<QPoint> &a, int x, int y, int width, int height)
 {
     a.clear();
-    int endY = image.getImage().height(), endX = image.getImage().width();
-    if(y == 0 && (x >= 1 && x <= (endX - 2)))
+    if(y == 0 && (x >= 1 && x <= (width - 2)))
     {
         a << QPoint(x + 1, y) << QPoint(x, y + 1) << QPoint(x - 1, y);
     }
-    else if((y == (endY - 1)) && (x >= 1 && x <= (endX - 2)))
+    else if((y == (height - 1)) && (x >= 1 && x <= (width - 2)))
     {
         a << QPoint(x, y - 1) << QPoint(x + 1, y)  << QPoint(x - 1, y);
     }
-    else if(x == 0 && (y >= 1 && y <= (endY - 2)))
+    else if(x == 0 && (y >= 1 && y <= (height - 2)))
     {
         a << QPoint(x, y - 1) << QPoint(x + 1, y) << QPoint(x, y + 1);
     }
-    else if((x == (endX - 1)) && (y >= 1 && y <= (endY - 2)))
+    else if((x == (width - 1)) && (y >= 1 && y <= (height - 2)))
     {
         a << QPoint(x, y - 1) << QPoint(x, y + 1) << QPoint(x - 1, y);
     }
-    else if((y == (endY - 1)) && (x == 0))
+    else if((y == (height - 1)) && (x == 0))
     {
         a << QPoint(x, y - 1) << QPoint(x + 1, y) ;
     }
-    else if((y == 0) && (x == (endX - 1)))
+    else if((y == 0) && (x == (width - 1)))
     {
         a << QPoint(x - 1, y) << QPoint(x, y + 1);
     }
-    else if((y == (endY - 1)) && (x == (endX - 1)))
+    else if((y == (height - 1)) && (x == (width - 1)))
     {
         a << QPoint(x, y - 1) << QPoint(x - 1, y);
     }
@@ -185,34 +183,33 @@ void ImageArea::addPointsFront(QVector<QPoint> &a, int x, int y)
     else
         a << QPoint(x, y - 1) << QPoint(x + 1, y) << QPoint(x, y + 1) << QPoint(x - 1, y);
 }
-void ImageArea::addPointsDiagonal(QVector<QPoint> &a, int x, int y)
+void ImageArea::addPointsDiagonal(QVector<QPoint> &a, int x, int y, int width, int height)
 {
-    static int endY = image.getImage().height(), endX = image.getImage().width();
-    if(y == 0 && (x >= 1 && x <= (endX - 2)))
+    if(y == 0 && (x >= 1 && x <= (width - 2)))
     {
         a << QPoint(x + 1, y + 1) << QPoint(x - 1, y + 1);
     }
-    else if((y == (endY - 1)) && (x >= 1 && x <= (endX - 2)))
+    else if((y == (height - 1)) && (x >= 1 && x <= (width - 2)))
     {
         a << QPoint(x - 1, y - 1) << QPoint(x + 1, y - 1);
     }
-    else if(x == 0 && (y >= 1 && y <= (endY - 2)))
+    else if(x == 0 && (y >= 1 && y <= (height - 2)))
     {
         a << QPoint(x + 1, y - 1) << QPoint(x + 1, y + 1);
     }
-    else if((x == (endX - 1)) && (y >= 1 && y <= (endY - 2)))
+    else if((x == (width - 1)) && (y >= 1 && y <= (height - 2)))
     {
         a << QPoint(x - 1, y - 1) << QPoint(x - 1, y + 1);
     }
-    else if((y == (endY - 1)) && (x == 0))
+    else if((y == (height - 1)) && (x == 0))
     {
         a << QPoint(x + 1, y - 1);
     }
-    else if((y == 0) && (x == (endX - 1)))
+    else if((y == 0) && (x == (width - 1)))
     {
         a << QPoint(x - 1, y + 1);
     }
-    else if((y == (endY - 1)) && (x == (endX - 1)))
+    else if((y == (height - 1)) && (x == (width - 1)))
     {
         a << QPoint(x - 1, y - 1);
     }
@@ -223,7 +220,7 @@ void ImageArea::addPointsDiagonal(QVector<QPoint> &a, int x, int y)
     else
         a << QPoint(x - 1, y - 1) << QPoint(x + 1, y - 1) << QPoint(x + 1, y + 1) << QPoint(x - 1, y + 1);
 }
-void ImageArea::setFallibility(int &a)
+void ImageArea::setFallibility(int a)
 {
     fallibility = a;
 }
