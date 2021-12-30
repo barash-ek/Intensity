@@ -6,7 +6,7 @@
 
 ImageArea::ImageArea(): accuracy(3)
 {}
-ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(picture), accuracy(a), fallibility(10)
+ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(picture), accuracy(a)
 {
     int imageHeight = image.getImage().height();
     int imageWidth = image.getImage().width();
@@ -219,10 +219,6 @@ void ImageArea::addPointsDiagonal(QVector<QPoint> &a, int x, int y, int width, i
     }
     else
         a << QPoint(x - 1, y - 1) << QPoint(x + 1, y - 1) << QPoint(x + 1, y + 1) << QPoint(x - 1, y + 1);
-}
-void ImageArea::setFallibility(int a)
-{
-    fallibility = a;
 }
 Image& ImageArea::getImageObject()
 {

@@ -1,8 +1,6 @@
 #include "contour.h"
 #include <QFile>
 #include <QTextStream>
-#include <QtMath>
-#include <QVector2D>
 
 Contour::Contour()
 {}
@@ -220,32 +218,45 @@ void Contour::buildApproximation(int fallibility)
 {
     if(!pointsContour.isEmpty())
     {
-        int i = 0, j = 0;
-        int differenceX = 0, differenceY = 0;
         chosenPoints << pointsContour[0];
-        while(i != (pointsContour.size() - 1))
+        bool condition = true;
+        for(int j = 0; j < pointsContour.size(); ++j)  // j отвечает за стартовую точку
         {
-            differenceX = 0;
-            differenceY = 0;
-            while((qPow((qreal)differenceX, 2) + qPow((qreal)differenceY, 2) <= qPow((qreal)fallibility, 2)) && (i != (pointsContour.size() - 1)))
+            condition = true;
+            QVector2D startPoint(chosenPoints[chosenPoints.size() - 1]);
+            for(int i = j + 1; i < pointsContour.size(); ++i)
             {
-                ++i;
-                differenceX = chosenPoints[j].x() - pointsContour[i].x();
-                differenceY = chosenPoints[j].y() - pointsContour[i].y();
+                QVector2D endPoint(pointsContour[i]);
+                QQueue<QVector2D> pointsBetween;
+                for(int k = i - 1; k > j; --k)
+                    if(pointsContour[k] != chosenPoints[chosenPoints.size() - 1])
+                        pointsBetween.enqueue(QVector2D(pointsContour[k]));
+                if(!pointsBetween.isEmpty())
+                {
+                    QVector2D direction((endPoint - startPoint).normalized());
+                    while(!pointsBetween.isEmpty())
+                    {
+                        condition = pointsBetween.dequeue().distanceToLine(startPoint, direction) <= fallibility;
+                        if(!condition)
+                        {
+                            chosenPoints << pointsContour[i - 1];
+                            j = i - 2;
+                            break;
+                        }
+                    }
+                }
+                if(!condition)
+                    break;
             }
-            if(i != (pointsContour.size() - 1))
-                chosenPoints << pointsContour[i - 1];
-            ++j;
         }
-        chosenPoints << chosenPoints[0];
-        QFile fileOut("contourApproximation.json");
-        fileOut.open(QIODevice::WriteOnly | QIODevice::Text);
-        QTextStream writeStream(&fileOut);
-        for(int i = 0; i < chosenPoints.size(); i++)
-            writeStream << chosenPoints[i].x() << " " << -chosenPoints[i].y() << "\n";
-        //writeStream << chosenPoints[0].x() << " " << -chosenPoints[0].y() << "\n";
-        fileOut.close();
-    }
+        chosenPoints << pointsContour[0];
+     }
+    QFile fileOut("contourApproximation.json");
+    fileOut.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream writeStream(&fileOut);
+    for(int i = 0; i < chosenPoints.size(); i++)
+        writeStream << chosenPoints[i].x() << " " << -chosenPoints[i].y() << "\n";
+    fileOut.close();
 }
 QVector<QPoint>& Contour::getPointsApproximation()
 {

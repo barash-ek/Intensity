@@ -20,6 +20,7 @@
 #include <QSlider>
 #include <QSpinBox>
 #include <QVBoxLayout>
+#include <QVector2D>
 #include <QWidget>
 
 #endif

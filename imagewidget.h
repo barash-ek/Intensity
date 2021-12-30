@@ -40,6 +40,7 @@ private:
     QColor color;
     int accuracy;
     int fallibility;
+    void clearScreen();
 };
 
 #endif // WIDGET_H

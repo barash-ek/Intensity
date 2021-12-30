@@ -1,7 +1,7 @@
 #include "imagewidget.h"
 #include "contour.h"
 
-ImageWidget::ImageWidget(QWidget *parent): QWidget(parent), xMouse(-1), yMouse(-1), transparency(255), color(255, 0, 0, transparency), accuracy(10), fallibility(10)
+ImageWidget::ImageWidget(QWidget *parent): QWidget(parent), xMouse(-1), yMouse(-1), transparency(255), color(255, 0, 0, transparency), accuracy(10), fallibility(2)
 {
     setMouseTracking(true);
     setAttribute(Qt::WA_StaticContents);
@@ -12,18 +12,13 @@ void ImageWidget::openImage(const QString &fileName)
     image = openImage;
     QSize size = image.getImage().size();
     emit signalWidget(size);
-    QImage newArea;
-    areaImage = newArea;
-    Contour newContour;
-    contour = newContour;
+    clearScreen();
 }
 void ImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
     int a=image.getIntensity(event->pos());
     if(a>=0)
-    {
         emit mouseMoved(a);
-    }
 }
 void ImageWidget::mousePressEvent(QMouseEvent *event)
 {
@@ -51,16 +46,15 @@ void ImageWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     QPainter painter(this);
-    painter.setPen(QPen(Qt::blue));
+    painter.setPen(QPen(Qt::blue, 2));
     //painter.setRenderHint(QPainter::Antialiasing, true);
     painter.drawImage(QPoint(0,0), image.getImage());
     painter.drawImage(QPoint(0,0), areaImage);
 
-    //painter.drawPolyline(area.getPoints());
     QVector<QPoint> points = contour.getPointsApproximation();
     for(int i = 0 ; i < (points.size() - 1); ++i)
         painter.drawLine(points[i], points[i + 1]);
-    painter.setPen(QPen(Qt::magenta));
+    painter.setPen(QPen(Qt::magenta, 3));
     for(int i = 0; i < points.size(); ++i)
         painter.drawPoint(points[i]);
 }
@@ -126,4 +120,13 @@ int ImageWidget::getAccuracy()
 int ImageWidget::getFallibility()
 {
     return fallibility;
+}
+void ImageWidget::clearScreen()
+{
+    xMouse = -1;
+    yMouse = -1;
+    QImage newArea;
+    areaImage = newArea;
+    Contour newContour;
+    contour = newContour;
 }

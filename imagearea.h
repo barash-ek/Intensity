@@ -7,7 +7,6 @@ class ImageArea
 private:
     Image image;
     int accuracy;
-    int fallibility;
     QVector<QVector <int> > conditionPoint;
     enum PixelState
     {
@@ -22,7 +21,6 @@ private:
 public:
     ImageArea();
     ImageArea(const Image &picture, const QPoint &point, int a);
-    void setFallibility(int a);
     Image& getImageObject();
     QVector<QVector <int> >* getconditionPoint();
     QImage drawArea(const QColor &color);
