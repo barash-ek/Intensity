@@ -2,7 +2,7 @@
 #define WIDGET_H
 #include "image.h"
 #include "imagearea.h"
-#include "contour.h"
+#include "contoursset.h"
 
 class ImageWidget: public QWidget
 {
@@ -33,7 +33,7 @@ protected:
 private:
     Image image;
     ImageArea area;
-    Contour contour;
+    ContoursSet contour;
     QImage areaImage;
     int xMouse, yMouse;
     int transparency;

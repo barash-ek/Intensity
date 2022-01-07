@@ -10,6 +10,8 @@ PRECOMPILED_HEADER = pch.h
 
 HEADERS += \
     contour.h \
+    contourbuilder.h \
+    contoursset.h \
     image.h \
     imagearea.h \
     imagewidget.h \
@@ -19,6 +21,8 @@ HEADERS += \
 
 SOURCES += \
     contour.cpp \
+    contourbuilder.cpp \
+    contoursset.cpp \
     image.cpp \
     imagearea.cpp \
     imagewidget.cpp \

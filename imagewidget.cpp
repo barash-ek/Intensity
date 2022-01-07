@@ -1,4 +1,5 @@
 #include "imagewidget.h"
+#include "contourbuilder.h"
 #include "contour.h"
 
 ImageWidget::ImageWidget(QWidget *parent): QWidget(parent), xMouse(-1), yMouse(-1), transparency(255), color(255, 0, 0, transparency), accuracy(10), fallibility(2)
@@ -34,9 +35,10 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
             yMouse = y;
             ImageArea clickedArea(image, QPoint(xMouse, yMouse), accuracy);
             area = clickedArea;
-            Contour contourNew(area);
-            contour = contourNew;
-            contour.buildApproximation(fallibility);
+            ContourBuilder contourNew(&area);
+            contour = contourNew.getSetContours();
+//            contour = contourNew;
+//            contour.buildApproximation(fallibility);
             areaImage = area.drawArea(color);
             update();
         }
@@ -51,12 +53,24 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     painter.drawImage(QPoint(0,0), image.getImage());
     painter.drawImage(QPoint(0,0), areaImage);
 
-    QVector<QPoint> points = contour.getPointsApproximation();
-    for(int i = 0 ; i < (points.size() - 1); ++i)
-        painter.drawLine(points[i], points[i + 1]);
+    /*if(!contour.getSetContours().isEmpty())
+    {
+        QVector<QPoint> points = contour.getSetContours()[0].getPoints();
+//    for(int i = 0 ; i < (points.size() - 1); ++i)
+//        painter.drawLine(points[i], points[i + 1]);
     painter.setPen(QPen(Qt::magenta, 3));
     for(int i = 0; i < points.size(); ++i)
         painter.drawPoint(points[i]);
+    }*/
+    if(!contour.buildApproximation(fallibility).isEmpty())
+    {
+        QVector<QPoint> points = contour.buildApproximation(fallibility);
+        for(int i = 0 ; i < (points.size() - 1); ++i)
+            painter.drawLine(points[i], points[i + 1]);
+        painter.setPen(QPen(Qt::magenta, 3));
+        for(int i = 0; i < points.size(); ++i)
+            painter.drawPoint(points[i]);
+    }
 }
 void ImageWidget::userTransparency(int a)
 {
@@ -72,9 +86,9 @@ void ImageWidget::userFallibility(int a)
     {
         ImageArea clickedArea(image, QPoint(xMouse, yMouse), accuracy);
         area = clickedArea;
-        Contour contourNew(area);
-        contour = contourNew;
-        contour.buildApproximation(fallibility);
+//        Contour contourNew(area);
+//        contour = contourNew;
+//        contour.buildApproximation(fallibility);
         if(!areaImage.isNull())
             areaImage = area.drawArea(color);
         update();
@@ -100,9 +114,9 @@ void ImageWidget::userAccuracy(int a)
     {
         ImageArea chosenArea(image, QPoint(xMouse, yMouse), accuracy);
         area = chosenArea;
-        Contour contourNew(area);
-        contour = contourNew;
-        contour.buildApproximation(fallibility);
+//        Contour contourNew(area);
+//        contour = contourNew;
+//        contour.buildApproximation(fallibility);
         if(!areaImage.isNull())
             areaImage = area.drawArea(color);
         update();
@@ -127,6 +141,6 @@ void ImageWidget::clearScreen()
     yMouse = -1;
     QImage newArea;
     areaImage = newArea;
-    Contour newContour;
+    ContoursSet newContour;
     contour = newContour;
 }
