@@ -6,13 +6,13 @@ QVector<Contour>& ContoursSet::getSetContours()
 {
     return setContours;
 }
-QVector<QPoint> ContoursSet::buildApproximation(int fallibility)
+void ContoursSet::buildApproximation(int fallibility)
 {
-    QVector<QPoint> pointsContour;
-    QVector<QPoint> chosenPoints;
-    if(!setContours.isEmpty())
+    nodesApproximation.resize(setContours.size());
+    for(int i = 0; i < nodesApproximation.size(); ++i)
     {
-        pointsContour = setContours[0].getPoints();
+        QVector<QPoint> pointsContour = setContours[i].getPoints();
+        QVector<QPoint> chosenPoints;
         chosenPoints << pointsContour[0];
         bool condition = true;
         for(int j = 0; j < pointsContour.size(); ++j)  // j отвечает за стартовую точку
@@ -45,10 +45,14 @@ QVector<QPoint> ContoursSet::buildApproximation(int fallibility)
             }
         }
         chosenPoints << pointsContour[0];
+        nodesApproximation[i] = chosenPoints;
     }
-    return chosenPoints;
 }
-void ContoursSet::operator<<(Contour &contour)
+void ContoursSet::operator<<(const Contour &contour)
 {
     setContours << contour;
+}
+QVector<QVector<QPoint>>* ContoursSet::getNodesApproximation()
+{
+    return &nodesApproximation;
 }

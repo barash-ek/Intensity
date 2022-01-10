@@ -96,7 +96,7 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
                     }
                 }
             }
-        // Удадение точек, ведущих к самопересечению контура
+        // Удаление точек, ведущих к самопересечению контура
         for(int i = 0; i < imageHeight; ++i)
             {
                 for(int j = 0; j < imageWidth; ++j)
@@ -131,15 +131,15 @@ QImage ImageArea::drawArea(const QColor &color)
     {
         for(int j = 0; j < imageWidth; ++j)
         {
-            /*if(conditionPoint[i][j] == InnerArea)
+            if(conditionPoint[i][j] == InnerArea)
                 foundArea.setPixelColor(j, i, color);
-            else if(conditionPoint[i][j] == ArrangeContour)
+            /*else if(conditionPoint[i][j] == ArrangeContour)
                 foundArea.setPixelColor(j, i, Qt::green);
             else if(conditionPoint[i][j] == ContourPoint)
-                foundArea.setPixelColor(j, i, Qt::blue);
+                foundArea.setPixelColor(j, i, Qt::green);*/
             else if(conditionPoint[i][j] == InnerVoid)
                 foundArea.setPixelColor(j, i, Qt::yellow);
-            else*/
+            else
                 foundArea.setPixelColor(j, i,transparentColor);
         }
     }

@@ -7,6 +7,17 @@
 class ImageWidget: public QWidget
 {
     Q_OBJECT
+private:
+    Image image;
+    ImageArea area;
+    ContoursSet contour;
+    QImage areaImage;
+    int xMouse, yMouse;
+    int transparency;
+    QColor color;
+    int accuracy;
+    int fallibility;
+    void clearScreen();
 
 public:
     ImageWidget(QWidget *parent = nullptr);
@@ -14,6 +25,7 @@ public:
     int getTransparency();
     int getAccuracy();
     int getFallibility();
+
 signals:
     void mouseMoved(int a);
     void signalWidget(QSize s);
@@ -29,18 +41,6 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
-
-private:
-    Image image;
-    ImageArea area;
-    ContoursSet contour;
-    QImage areaImage;
-    int xMouse, yMouse;
-    int transparency;
-    QColor color;
-    int accuracy;
-    int fallibility;
-    void clearScreen();
 };
 
 #endif // WIDGET_H

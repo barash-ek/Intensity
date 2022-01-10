@@ -4,6 +4,7 @@
 class Contour
 {
     QVector<QPoint> pointsContour;
+
 public:
     Contour(QVector<QPoint> *points = nullptr);
     QVector<QPoint>& getPoints();

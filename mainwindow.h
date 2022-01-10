@@ -6,15 +6,6 @@
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-public:
-    explicit MainWindow(QWidget *parent = nullptr);
-protected:
-    void closeEvent(QCloseEvent *event) override;
-
-private slots:
-    void open();
-    void slotWidget(QSize s);
-
 private:
     void createActions();
     void createMenus();
@@ -24,5 +15,15 @@ private:
     QMenu *fileMenu;
     QAction *openAct;
     QAction *exitAct;
+
+public:
+    explicit MainWindow(QWidget *parent = nullptr);
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
+private slots:
+    void open();
+    void slotWidget(QSize s);
 };
 #endif //MAINWINDOW_H

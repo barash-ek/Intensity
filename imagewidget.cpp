@@ -37,8 +37,7 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
             area = clickedArea;
             ContourBuilder contourNew(&area);
             contour = contourNew.getSetContours();
-//            contour = contourNew;
-//            contour.buildApproximation(fallibility);
+            contour.buildApproximation(fallibility);
             areaImage = area.drawArea(color);
             update();
         }
@@ -48,23 +47,17 @@ void ImageWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     QPainter painter(this);
-    painter.setPen(QPen(Qt::blue, 2));
     //painter.setRenderHint(QPainter::Antialiasing, true);
     painter.drawImage(QPoint(0,0), image.getImage());
     painter.drawImage(QPoint(0,0), areaImage);
 
-    /*if(!contour.getSetContours().isEmpty())
+    QVector<QVector<QPoint>> *pointsApproximation;
+    //contour.buildApproximation(fallibility);
+    pointsApproximation = contour.getNodesApproximation();
+    for(int k = 0; k < (*pointsApproximation).size(); ++k)
     {
-        QVector<QPoint> points = contour.getSetContours()[0].getPoints();
-//    for(int i = 0 ; i < (points.size() - 1); ++i)
-//        painter.drawLine(points[i], points[i + 1]);
-    painter.setPen(QPen(Qt::magenta, 3));
-    for(int i = 0; i < points.size(); ++i)
-        painter.drawPoint(points[i]);
-    }*/
-    if(!contour.buildApproximation(fallibility).isEmpty())
-    {
-        QVector<QPoint> points = contour.buildApproximation(fallibility);
+        QVector<QPoint> points = (*pointsApproximation)[k];
+        painter.setPen(QPen(Qt::blue, 2));
         for(int i = 0 ; i < (points.size() - 1); ++i)
             painter.drawLine(points[i], points[i + 1]);
         painter.setPen(QPen(Qt::magenta, 3));
@@ -86,11 +79,10 @@ void ImageWidget::userFallibility(int a)
     {
         ImageArea clickedArea(image, QPoint(xMouse, yMouse), accuracy);
         area = clickedArea;
-//        Contour contourNew(area);
-//        contour = contourNew;
-//        contour.buildApproximation(fallibility);
-        if(!areaImage.isNull())
-            areaImage = area.drawArea(color);
+        ContourBuilder contourNew(&area);
+        contour = contourNew.getSetContours();
+        contour.buildApproximation(fallibility);
+        areaImage = area.drawArea(color);
         update();
     }
 }
@@ -101,8 +93,7 @@ void ImageWidget::userColor()
     {
         colorChosen.setAlpha(transparency);
         color = colorChosen;
-        if(!areaImage.isNull())
-            areaImage = area.drawArea(color);
+        areaImage = area.drawArea(color);
     }
     update();
 }
@@ -114,11 +105,10 @@ void ImageWidget::userAccuracy(int a)
     {
         ImageArea chosenArea(image, QPoint(xMouse, yMouse), accuracy);
         area = chosenArea;
-//        Contour contourNew(area);
-//        contour = contourNew;
-//        contour.buildApproximation(fallibility);
-        if(!areaImage.isNull())
-            areaImage = area.drawArea(color);
+        ContourBuilder contourNew(&area);
+        contour = contourNew.getSetContours();
+        contour.buildApproximation(fallibility);
+        areaImage = area.drawArea(color);
         update();
     }
     emit signalSetEnabled(true);

@@ -3,7 +3,6 @@
 
 class Image
 {
-private:
     QImage image;
 
 public:

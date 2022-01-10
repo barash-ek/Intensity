@@ -4,7 +4,6 @@
 
 class ImageArea
 {
-private:
     Image image;
     int accuracy;
     QVector<QVector <int> > conditionPoint;

@@ -6,62 +6,72 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
 {
     if(area->getconditionPoint() != nullptr)
         conditionPoint = area->getconditionPoint();
-    QVector<QPoint> pointsContour, pointsAuxiliary, pointsNeigbour;
     int imageHeight = area->getImageObject().getImage().height();
     int imageWidth = area->getImageObject().getImage().width();
     int x = -1, y = -1;
-    for(int i = 0; i < imageHeight; ++i)
+    bool indicator = false;
+    do
     {
-        for(int j = 0; j < imageWidth; ++j)
+        x = -1;
+        y = -1;
+        indicator = false;
+        for(int i = 0; i < imageHeight; ++i)
         {
-            if((*conditionPoint)[i][j] == ContourPoint)
+            for(int j = 0; j < imageWidth; ++j)
             {
-                x = j;
-                y = i;
+                if((*conditionPoint)[i][j] == ContourPoint)
+                {
+                    x = j;
+                    y = i;
+                    indicator = true;
+                    break;
+                }
+            }
+            if(indicator)
                 break;
-            }
         }
-        if(y >= 0)
-            break;
-    }
-    if(x != - 1 && y != - 1)
-    {
-        int quantityNeigbours = 0;
-        QVector<int> pointsState(4);
-        pointsContour << QPoint(x, y);
-        (*conditionPoint)[y][x] = ArrangeContour;
-        do
+        if(x != - 1 && y != - 1)
         {
-            area->addPointsFront(pointsAuxiliary, x, y, imageWidth, imageHeight);
-            area->addPointsDiagonal(pointsAuxiliary, x, y, imageWidth, imageHeight);
-            findAppropriateNeigbours(pointsAuxiliary, pointsState, pointsNeigbour, x, y);
-            quantityNeigbours = pointsNeigbour.size();
-            if(quantityNeigbours == 1)
+            QVector<QPoint> pointsContour, pointsAuxiliary, pointsNeigbour;
+            int quantityNeigbours = 0;
+            QVector<int> pointsState(4);
+            pointsContour << QPoint(x, y);
+            (*conditionPoint)[y][x] = ArrangeContour;
+            do
             {
-                addNeigbour(pointsContour, pointsNeigbour[0], x, y);
-            }
-            else if(quantityNeigbours == 2)
-            {
-                QPoint pointExternal, pointInternal;
-                if(pointsNeigbour[0] == findExternalPoint(x, y, pointsNeigbour[0], pointsNeigbour[1]))
+                area->addPointsFront(pointsAuxiliary, x, y, imageWidth, imageHeight);
+                area->addPointsDiagonal(pointsAuxiliary, x, y, imageWidth, imageHeight);
+                findAppropriateNeigbours(pointsAuxiliary, pointsState, pointsNeigbour, x, y);
+                quantityNeigbours = pointsNeigbour.size();
+                if(quantityNeigbours == 1)
                 {
-                    pointExternal = pointsNeigbour[0];
-                    pointInternal = pointsNeigbour[1];
+                    addNeigbour(pointsContour, pointsNeigbour[0], x, y);
                 }
-                else
+                else if(quantityNeigbours == 2)
                 {
-                    pointExternal = pointsNeigbour[1];
-                    pointInternal = pointsNeigbour[0];
+                    QPoint pointExternal, pointInternal;
+                    if(pointsNeigbour[0] == findExternalPoint(x, y, pointsNeigbour[0], pointsNeigbour[1]))
+                    {
+                        pointExternal = pointsNeigbour[0];
+                        pointInternal = pointsNeigbour[1];
+                    }
+                    else
+                    {
+                        pointExternal = pointsNeigbour[1];
+                        pointInternal = pointsNeigbour[0];
+                    }
+                    addNeigbour(pointsContour, pointExternal, x, y);
                 }
-                addNeigbour(pointsContour, pointExternal, x, y);
-            }
-            pointsNeigbour.clear();
-            pointsAuxiliary.clear();
-        }while(quantityNeigbours);
-        pointsContour << pointsContour[0];
-    }
-     Contour contour(&pointsContour);
-     setContours << contour;
+                pointsNeigbour.clear();
+                pointsAuxiliary.clear();
+            }while(quantityNeigbours);
+            pointsContour << pointsContour[0];
+            Contour contour(&pointsContour);
+            setContours << contour;
+        }
+        else
+            indicator = false;
+    }while(indicator);
 }
 void ContourBuilder::findAppropriateNeigbours(QVector<QPoint> &points, QVector<int> &states, QVector<QPoint> &neigbours, int x, int y)
 {

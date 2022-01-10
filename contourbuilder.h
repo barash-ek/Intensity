@@ -5,7 +5,6 @@ class ImageArea;
 
 class ContourBuilder
 {
-private:
     QVector<QVector<int>> *conditionPoint;
     ContoursSet setContours;
     enum PixelState
@@ -21,6 +20,7 @@ private:
     void findAppropriateNeigbours(QVector<QPoint> &points, QVector<int> &states, QVector<QPoint> &neigbours, int x, int y);
     void addNeigbour(QVector<QPoint>& pointsContour, QPoint &point, int &x, int &y);
     QPoint& findExternalPoint(int xMain, int yMain, QPoint &firstPoint, QPoint &secondPoint);
+
 public:
     ContourBuilder(ImageArea *area = nullptr);
     ContoursSet& getSetContours();
