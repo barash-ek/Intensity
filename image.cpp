@@ -13,13 +13,13 @@ Image::Image(const QString &fileName)
 }
 int Image::getIntensity(const QPoint &point)
 {
-    int x=point.x();
-    int y=point.y();
+    int x = point.x();
+    int y = point.y();
     unsigned char *a;
-    if(x>=image.width()||y>=image.height())
+    if(x >= image.width() || y >= image.height())
         return -1;
-    a=image.scanLine(y);
-    int intens=-1;
+    a = image.scanLine(y);
+    int intens = -1;
     if(a)
         intens = int(a[x]);
     else

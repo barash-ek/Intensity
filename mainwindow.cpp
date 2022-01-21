@@ -88,5 +88,5 @@ void MainWindow::slotWidget(QSize s)
     int diffWidth = width() - widget->width() - bar->width();
     widget->resize(s);
     bar->resize(bar->width(),s.height());
-    this->resize(s.width()+bar->width()+diffWidth, s.height()+diffHeight);
+    this->resize(s.width() + bar->width() + diffWidth, s.height() + diffHeight);
 }

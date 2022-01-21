@@ -3,6 +3,7 @@
 #include "image.h"
 #include "imagearea.h"
 #include "contoursset.h"
+#include <QTransform>
 
 class ImageWidget: public QWidget
 {
@@ -11,12 +12,14 @@ private:
     Image image;
     ImageArea area;
     ContoursSet contour;
-    QImage areaImage;
+    QImage areaImage, contourImage;
     int xMouse, yMouse;
     int transparency;
     QColor color;
     int accuracy;
     int fallibility;
+    qreal scale;
+    QTransform transform;
     void clearScreen();
 
 public:
@@ -30,16 +33,19 @@ signals:
     void mouseMoved(int a);
     void signalWidget(QSize s);
     void signalSetEnabled(bool condition);
+    void scaleChanged(qreal s);
 
 public slots:
     void userTransparency(int a);
     void userFallibility(int a);
     void userColor();
     void userAccuracy(int a);
+    void changeScale(qreal s);
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 };
 
