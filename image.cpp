@@ -16,7 +16,7 @@ int Image::getIntensity(const QPoint &point)
     int x = point.x();
     int y = point.y();
     unsigned char *a;
-    if(x >= image.width() || y >= image.height())
+    if(!(x >= 0 && x < image.width()) || !(y >= 0 && y < image.height()))
         return -1;
     a = image.scanLine(y);
     int intens = -1;

@@ -15,41 +15,44 @@ ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
     dx(0),
     dy(0),
     startDraw(0.0, 0.0),
-    pointInImage(0.0, 0.0)
+    transform(zoom, 0, 0, zoom, dx, dy)
 {
     setMouseTracking(true);
     setAttribute(Qt::WA_StaticContents);
     connect(this, SIGNAL(imageLoaded()), this, SLOT(scaleImage()));
-    connect(this, SIGNAL(scaleChanged(qreal)), this, SLOT(changeScale(qreal)));
-    connect(this, SIGNAL(translateChanged(qreal,qreal)), this, SLOT(changeTranslate(qreal,qreal)));
 }
 void ImageWidget::openImage(const QString &fileName)
 {
     Image openImage(fileName);
     image = openImage;
     QSize size = image.getImage().size();
-    //emit signalWidget(size);
+    emit signalWidget(size);
     clearScreen();
     zoom = 1.0;
-    emit imageLoaded();
+    //emit imageLoaded();
 }
 void ImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    int x = event->pos().x();
-    int y = event->pos().y();
-    QPoint scalePoint = transform.inverted().map(QPoint(x, y));
+    int xScaled = event->pos().x() - startDraw.x();
+    int yScaled = event->pos().y() - startDraw.y();
+    QPoint drawStart(startDraw.x(), startDraw.y());
+    QPoint point = transform.inverted().map(QPoint(xScaled, yScaled));
+    qDebug() << point;
 
-    int a = image.getIntensity(scalePoint);
+    int a = image.getIntensity(point);
     if(a >= 0)
         emit mouseMoved(a);
 }
 void ImageWidget::mousePressEvent(QMouseEvent *event)
 {
-    int x = event->x();
-    int y = event->y();
-    QPoint scalePoint = transform.inverted().map(QPoint(x, y));
-    x = scalePoint.x();
-    y = scalePoint.y();
+    int xScaled = event->pos().x() - startDraw.x();
+    int yScaled = event->pos().y() - startDraw.y();
+    QPointF point = transform.inverted().map(QPoint(xScaled, yScaled));
+    qDebug() << point;
+
+    int x = point.x();
+    int y = point.y();
+
     int imageHeight = image.getImage().height();
     int imageWidth = image.getImage().width();
     if(x < imageWidth && y < imageHeight)
@@ -72,27 +75,12 @@ void ImageWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     QPainter painter(this);
-    //painter.setTransform(transform);
+    painter.setTransform(transform);
 
-    qreal width = image.getImage().width();
-    qreal height = image.getImage().height();
-    qreal x = pointInImage.x();
-    qreal y = pointInImage.y();
-
-    QRectF  sourceRect(x - (x / zoom), y - (y / zoom), width / zoom, height / zoom);             // переделать
-    sourceRect &= image.getImage().rect();
-
-    painter.translate(startDraw);
-    painter.scale(zoom * scale, zoom * scale);
-    painter.translate(-startDraw);
-    painter.drawImage(startDraw, image.getImage(), sourceRect);
-
-    /*QTransform scaleMatrix(scale, 0, 0, scale, 0, 0);
-    QImage changedImage;
-    changedImage = image.getImage().transformed(transform);
-    painter.drawImage(QPoint(0,0), changedImage);*/
-    //painter.drawImage(QPoint(0,0), image.getImage());
-    /*painter.drawImage(QPoint(0,0), areaImage);
+    startDraw = QPointF((this->width() - image.getImage().width()) / 2, (this->height() - image.getImage().height()) / 2);
+    qDebug() << startDraw << "startDraw here";
+    painter.drawImage(startDraw, image.getImage());
+    painter.drawImage(startDraw, areaImage);
 
     QVector<QVector<QPoint>> *pointsApproximation;
     pointsApproximation = contour.getNodesApproximation();
@@ -102,22 +90,19 @@ void ImageWidget::paintEvent(QPaintEvent *event)
         painter.setPen(QPen(Qt::blue, 2));
         for(int i = 0 ; i < (points.size() - 1); ++i)
             //painter.drawLine(scaleMatrix.map(points[i]), scaleMatrix.map(points[i + 1]));
-            painter.drawLine(points[i], points[i + 1]);
+            painter.drawLine(points[i] + startDraw, points[i + 1] + startDraw);
         painter.setPen(QPen(Qt::magenta, 3));
         for(int i = 0; i < points.size(); ++i)
-            painter.drawPoint(points[i]);
+            painter.drawPoint(points[i] + startDraw);
             //painter.drawPoint(scaleMatrix.map(points[i]));
-    }*/
+    }
+    painter.resetTransform();
 }
-void ImageWidget::resizeEvent(QResizeEvent *event)
+/*void ImageWidget::resizeEvent(QResizeEvent *event)
 {
     QSize sizeWidget = event->size();
     qreal imageWidth = image.getImage().width();
     qreal imageHeight = image.getImage().height();
-    qreal xScale = (qreal)sizeWidget.width() / imageWidth;
-    qreal yScale = (qreal)sizeWidget.height() / imageHeight;
-
-    scale =  qMin<qreal>(xScale, yScale);
 
     qreal xOffset = 0.0, yOffset = 0.0;
     if((imageWidth * scale) < sizeWidget.width())
@@ -125,8 +110,9 @@ void ImageWidget::resizeEvent(QResizeEvent *event)
     if((imageHeight * scale) < sizeWidget.height())
         yOffset = (sizeWidget.height() - (imageHeight * scale)) / 2.0;
     startDraw = QPointF(xOffset, yOffset);
+
     update();
-}
+}*/
 void ImageWidget::scaleImage()
 {
     QSize sizeWidget = this->size();
@@ -143,6 +129,8 @@ void ImageWidget::scaleImage()
     if((imageHeight * scale) < sizeWidget.height())
         yOffset = (sizeWidget.height() - (imageHeight * scale)) / 2.0;
     startDraw = QPointF(xOffset, yOffset);
+
+    transform.scale(zoom * scale, zoom * scale);
     update();
 }
 void ImageWidget::userTransparency(int a)
@@ -214,48 +202,42 @@ void ImageWidget::clearScreen()
     ContoursSet newContour;
     contour = newContour;
 }
+/*void ImageWidget::wheelEvent(QWheelEvent *event)
+{
+    qreal zoomLocal = 0;
+    zoomLocal = event->angleDelta().y() > 0 ? 1.1 : 0.9;
+
+    QPointF startState = event->position();
+    zoom = zoomLocal;
+    transform.scale(zoom, zoom);
+    QPointF endState = transform.map(startState);
+
+    //QPointF endState = QPointF(startState.x() * zoom, startState.y() * zoom);
+    dx =  startState.x() - endState.x();
+    dy =  startState.y() - endState.y();
+    qDebug() << dx << dy;
+    transform.translate(dx, dy);
+
+    update();
+}*/
 void ImageWidget::wheelEvent(QWheelEvent *event)
 {
-//    qreal zoomMin = 0.07;
-//    qreal zoomMax = 8.0;
-    qreal zoomLocal = 0;
-//    if(event->angleDelta().y() > 0)
-//        zoomLocal = 1.3;
-//    else
-//        zoomLocal = 0.7;
-    /*if(zoomLocal >= zoomMin && zoomLocal <= zoomMax)
+    qreal zoomMin = 0.1;
+    qreal zoomMax = 10.0;
+    qreal zoomLocal = zoom;
+    zoomLocal += event->angleDelta().y() > 0 ? 0.2 : -0.2;
+    if(zoomLocal >= zoomMin && zoomLocal <= zoomMax)
     {
-        pointInImage = QPointF((event->position() - startDraw) / scale);
         QPointF startState = event->position();
+        zoom = zoomLocal;
+        QTransform scaleMatrix(zoom, 0, 0, zoom, 0, 0);
+        transform = scaleMatrix;
         QPointF endState = transform.map(startState);
-        dx += endState.x() - startState.x();
-        dy += endState.y() - startState.y();
-        transform.translate(dx, dy);
-        emit scaleChanged(zoomLocal);
-    }*/
-    qreal degrees = event->angleDelta().y() / 8.0;
-    qreal steps = degrees / 60.0;
-    zoomLocal = zoom * qPow(1.125, steps);
-    QPointF mousePosition = event->position();
-    if(degrees > 0)
-    {
-        if(mouseOverImage(mousePosition))
-            pointInImage = QPointF((mousePosition - startDraw) / scale);
-        else
-            pointInImage = QPointF(image.getImage().width() / 2, image.getImage().height() / 2);
+
+        dx =  startState.x() - endState.x();
+        dy =  startState.y() - endState.y();
+        QTransform commonMatrix(zoom, 0, 0, zoom, dx, dy);
+        transform = commonMatrix;
+        update();
     }
-    else if(degrees < 0)
-        pointInImage = QPointF((mousePosition - startDraw) / scale);
-    emit scaleChanged(zoomLocal);
-}
-void ImageWidget::changeScale(qreal z)
-{
-    zoom = z;
-    update();
-}
-void ImageWidget::changeTranslate(qreal onX, qreal onY)
-{
-    dx = onX;
-    dy = onY;
-    update();
 }
