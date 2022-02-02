@@ -4,6 +4,8 @@
 #include "imagearea.h"
 #include "contoursset.h"
 #include <QTransform>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 
 class ImageWidget: public QWidget
 {
@@ -23,7 +25,12 @@ private:
     qreal dx, dy;
     QPointF startDraw;
     QTransform transform;
+    bool isContourExist;
+    QPoint dragStartPosition;
+    QPoint *draggableNode;
+    bool isFirstNode;
     void clearScreen();
+    bool pointInContour(const QPoint &point);
 
 public:
     ImageWidget(QWidget *parent = nullptr);
@@ -51,6 +58,8 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     //void resizeEvent(QResizeEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 };
 
 #endif // WIDGET_H

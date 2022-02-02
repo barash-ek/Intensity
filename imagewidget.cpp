@@ -2,6 +2,10 @@
 #include "contourbuilder.h"
 #include "contour.h"
 #include <QtMath>
+#include <QDrag>
+#include <QMimeData>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 
 ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
     xMouse(-1),
@@ -15,10 +19,16 @@ ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
     dx(0),
     dy(0),
     startDraw(0.0, 0.0),
-    transform(zoom, 0, 0, zoom, dx, dy)
+    transform(zoom, 0, 0, zoom, dx, dy),
+    isContourExist(false),
+    dragStartPosition(0, 0),
+    draggableNode(0x0),
+    isFirstNode(false)
 {
     setMouseTracking(true);
+
     setAttribute(Qt::WA_StaticContents);
+    setAcceptDrops(true);
     connect(this, SIGNAL(imageLoaded()), this, SLOT(scaleImage()));
 }
 void ImageWidget::openImage(const QString &fileName)
@@ -28,27 +38,14 @@ void ImageWidget::openImage(const QString &fileName)
     QSize size = image.getImage().size();
     emit signalWidget(size);
     clearScreen();
-    zoom = 1.0;
     //emit imageLoaded();
-}
-void ImageWidget::mouseMoveEvent(QMouseEvent *event)
-{
-    int xScaled = event->pos().x() - startDraw.x();
-    int yScaled = event->pos().y() - startDraw.y();
-    QPoint drawStart(startDraw.x(), startDraw.y());
-    QPoint point = transform.inverted().map(QPoint(xScaled, yScaled));
-    qDebug() << point;
-
-    int a = image.getIntensity(point);
-    if(a >= 0)
-        emit mouseMoved(a);
 }
 void ImageWidget::mousePressEvent(QMouseEvent *event)
 {
     int xScaled = event->pos().x() - startDraw.x();
     int yScaled = event->pos().y() - startDraw.y();
     QPointF point = transform.inverted().map(QPoint(xScaled, yScaled));
-    qDebug() << point;
+    //qDebug() << point;
 
     int x = point.x();
     int y = point.y();
@@ -59,17 +56,85 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
     {
         if (event->button() == Qt::LeftButton)
         {
-            xMouse = x;
-            yMouse = y;
-            ImageArea clickedArea(image, QPoint(xMouse, yMouse), accuracy);
-            area = clickedArea;
-            ContourBuilder contourNew(&area);
-            contour = contourNew.getSetContours();
-            contour.buildApproximation(fallibility);
-            areaImage = area.drawArea(color);
-            update();
+            if(pointInContour(QPoint(x, y)))
+            {
+                dragStartPosition = event->pos();
+            }
+            else
+            {
+                xMouse = x;
+                yMouse = y;
+                ImageArea clickedArea(image, QPoint(xMouse, yMouse), accuracy);
+                area = clickedArea;
+                ContourBuilder contourNew(&area);
+                contour = contourNew.getSetContours();
+                contour.buildApproximation(fallibility);
+                isContourExist = true;
+                areaImage = area.drawArea(color);
+                update();
+            }
         }
     }
+}
+void ImageWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    if(dragStartPosition != QPoint(0, 0))
+    {
+        static int k = 0;
+        k++;
+
+        if (!(event->buttons() & Qt::LeftButton))
+            return;
+        if ((event->pos() - dragStartPosition).manhattanLength() < QApplication::startDragDistance())
+            return;
+
+        QDrag *drag = new QDrag(this);
+        QMimeData *mimeData = new QMimeData;
+
+        mimeData->setText("QPoint");
+        drag->setMimeData(mimeData);
+
+        Qt::DropAction dropAction = drag->exec(Qt::CopyAction | Qt::MoveAction);
+        if(dropAction == Qt::MoveAction)
+            update();
+    }
+    else
+    {
+        int xScaled = event->pos().x() - startDraw.x();
+        int yScaled = event->pos().y() - startDraw.y();
+        QPoint drawStart(startDraw.x(), startDraw.y());
+        QPoint point = transform.inverted().map(QPoint(xScaled, yScaled));
+        //qDebug() << point;
+
+        int a = image.getIntensity(point);
+        if(a >= 0)
+            emit mouseMoved(a);
+    }
+}
+void ImageWidget::dragEnterEvent(QDragEnterEvent *event)
+{
+    if(event->mimeData()->hasText())
+        event->acceptProposedAction();
+}
+void ImageWidget::dropEvent(QDropEvent *event)
+{
+    QPoint oldPositionDraggablePoint = (*draggableNode);
+    (*draggableNode) = event->pos();
+    if(isFirstNode)
+    {
+        QVector<QVector<QPoint>> *pointsApproximation;
+        pointsApproximation = contour.getNodesApproximation();
+        for(int i = 0; i < (*pointsApproximation).size(); ++i)
+        {
+            for(int j = 0; j < (*pointsApproximation)[i].size(); ++j)
+            {
+                if((*pointsApproximation)[i][j] == oldPositionDraggablePoint)
+                    (*pointsApproximation)[i][j] = (*draggableNode);
+            }
+        }
+
+    }
+    event->acceptProposedAction();
 }
 void ImageWidget::paintEvent(QPaintEvent *event)
 {
@@ -78,7 +143,8 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     painter.setTransform(transform);
 
     startDraw = QPointF((this->width() - image.getImage().width()) / 2, (this->height() - image.getImage().height()) / 2);
-    qDebug() << startDraw << "startDraw here";
+    //qDebug() << startDraw << "startDraw here";
+
     painter.drawImage(startDraw, image.getImage());
     painter.drawImage(startDraw, areaImage);
 
@@ -96,7 +162,6 @@ void ImageWidget::paintEvent(QPaintEvent *event)
             painter.drawPoint(points[i] + startDraw);
             //painter.drawPoint(scaleMatrix.map(points[i]));
     }
-    painter.resetTransform();
 }
 /*void ImageWidget::resizeEvent(QResizeEvent *event)
 {
@@ -201,6 +266,10 @@ void ImageWidget::clearScreen()
     areaImage = newArea;
     ContoursSet newContour;
     contour = newContour;
+    isContourExist = false;
+    isFirstNode = false;
+    dragStartPosition = QPoint(0, 0);
+    zoom = 1.0;
 }
 /*void ImageWidget::wheelEvent(QWheelEvent *event)
 {
@@ -240,4 +309,29 @@ void ImageWidget::wheelEvent(QWheelEvent *event)
         transform = commonMatrix;
         update();
     }
+}
+bool ImageWidget::pointInContour(const QPoint &point)
+{
+    if(isContourExist)
+    {
+        QVector<QVector<QPoint>> *pointsApproximation;
+        pointsApproximation = contour.getNodesApproximation();
+        for(int i = 0; i < (*pointsApproximation).size(); ++i)
+        {
+            for(int j = 0; j < (*pointsApproximation)[i].size(); ++j)
+            {
+                QPoint node = (*pointsApproximation)[i][j];
+                if(qSqrt(qPow(point.x() - node.x(), 2) + qPow(point.y() - node.y(), 2)) <= 3)  // magic number!! 3
+                {
+                    if(j == 0)
+                        isFirstNode = true;
+                    draggableNode = &(*pointsApproximation)[i][j];
+                    return true;
+                }
+            }
+        }
+    }
+    else
+        return false;
+    return false;
 }
