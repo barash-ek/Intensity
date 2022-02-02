@@ -22,7 +22,8 @@ private:
     qreal scale;
     qreal dx, dy;
     QPointF startDraw;
-    QTransform transform;
+//    QTransform transform;
+    QMatrix transformMatrix;
     void clearScreen();
 
 public:
