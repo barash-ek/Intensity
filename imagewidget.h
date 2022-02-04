@@ -3,9 +3,6 @@
 #include "image.h"
 #include "imagearea.h"
 #include "contoursset.h"
-#include <QTransform>
-#include <QDragEnterEvent>
-#include <QDropEvent>
 
 class ImageWidget: public QWidget
 {
@@ -22,13 +19,17 @@ private:
     int fallibility;
     qreal zoom;
     qreal scale;
-    qreal dx, dy;
     QPointF startDraw;
-    QTransform transform;
+    QMatrix transformMatrix;
+
     bool isContourExist;
     QPoint dragStartPosition;
     QPoint *draggableNode;
     bool isFirstNode;
+
+    const int thicknessPenNodes;
+    const int thicknessPenLines;
+
     void clearScreen();
     bool pointInContour(const QPoint &point);
 
@@ -55,11 +56,10 @@ public slots:
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     //void resizeEvent(QResizeEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent* event) override;
-    void dropEvent(QDropEvent* event) override;
 };
 
 #endif // WIDGET_H
