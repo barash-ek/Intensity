@@ -18,12 +18,11 @@ private:
     int accuracy;
     int fallibility;
     qreal zoom;
-    qreal scale;
     QPointF startDraw;
     QMatrix transformMatrix;
 
     bool isContourExist;
-    QPoint dragStartPosition;
+    QPointF dragStartPosition;
     QPoint *draggableNode;
     bool isFirstNode;
 
@@ -31,7 +30,9 @@ private:
     const int thicknessPenLines;
 
     void clearScreen();
-    bool pointInContour(const QPoint &point);
+    bool pointInContour(const QPoint &cursorPosition);
+    void editingNodes(const QPoint &cursorPosition);
+    void editingFirstnode(const QPoint &oldPositionDraggablePoint);
 
 public:
     ImageWidget(QWidget *parent = nullptr);
@@ -59,7 +60,6 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
-    //void resizeEvent(QResizeEvent *event) override;
 };
 
 #endif // WIDGET_H

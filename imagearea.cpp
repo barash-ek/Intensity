@@ -1,20 +1,17 @@
 #include "imagearea.h"
 #include "contour.h"
-#include <QFile>
-#include <QTextStream>
-#include <QtMath>
 
 ImageArea::ImageArea(): accuracy(3)
 {}
 ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(picture), accuracy(a)
 {
-    int imageHeight = image.getImage().height();
-    int imageWidth = image.getImage().width();
+    const int imageHeight = image.getImage().height();
+    const int imageWidth = image.getImage().width();
     conditionPoint.resize(imageHeight);
     for(int i = 0; i < imageHeight; ++i)
         conditionPoint[i].resize(imageWidth);
     conditionPoint[point.y()][point.x()] = InnerArea;
-    int mainIntensity = image.getIntensity(point);
+    const int mainIntensity = image.getIntensity(point);
     QQueue<QPoint> pointsQueue;
     QVector<QPoint> pointsVector;
     pointsQueue.enqueue(QPoint(point.x(), point.y()));
@@ -123,8 +120,8 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
 }
 QImage ImageArea::drawArea(const QColor &color)
 {
-    int imageHeight = image.getImage().height();
-    int imageWidth = image.getImage().width();
+    const int imageHeight = image.getImage().height();
+    const int imageWidth = image.getImage().width();
     QImage foundArea(imageWidth, imageHeight, QImage::Format_ARGB32);
     QColor transparentColor(0, 0, 0, 0);
     for(int i = 0; i < imageHeight; ++i)

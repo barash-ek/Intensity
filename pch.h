@@ -16,6 +16,7 @@
 #include <QPainter>
 #include <QPoint>
 #include <QPushButton>
+#include <QtMath>
 #include <QQueue>
 #include <QSlider>
 #include <QSpinBox>

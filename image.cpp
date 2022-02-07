@@ -7,14 +7,14 @@ Image::Image(const QString &fileName)
     QImage loadedImage;
     if (loadedImage.load(fileName))
     {
-        loadedImage=loadedImage.convertToFormat(QImage::Format_Grayscale8);
+        loadedImage = loadedImage.convertToFormat(QImage::Format_Grayscale8);
         image = loadedImage;
     }
 }
 int Image::getIntensity(const QPoint &point)
 {
-    int x = point.x();
-    int y = point.y();
+    const int x = point.x();
+    const int y = point.y();
     unsigned char *a;
     if(!(x >= 0 && x < image.width()) || !(y >= 0 && y < image.height()))
         return -1;

@@ -1,7 +1,6 @@
 #include "imagewidget.h"
 #include "contourbuilder.h"
 #include "contour.h"
-#include <QtMath>
 
 ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
     xMouse(-1),
@@ -11,7 +10,6 @@ ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
     accuracy(10),
     fallibility(2),
     zoom(1.0),
-    scale(1.0),
     startDraw(0.0, 0.0),
     isContourExist(false),
     dragStartPosition(0, 0),
@@ -28,22 +26,21 @@ ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
 }
 void ImageWidget::openImage(const QString &fileName)
 {
-    Image openImage(fileName);
-    image = openImage;
-    QSize size = image.getImage().size();
-    emit signalWidget(size);
+    image = Image(fileName);
+    //QSize size = image.getImage().size();
+    //emit signalWidget(size);
     clearScreen();
-    //emit imageLoaded();
+    emit imageLoaded();
 }
 void ImageWidget::mousePressEvent(QMouseEvent *event)
 {
-    const QPoint point = transformMatrix.inverted().map(event->pos());
+    const QPointF point = transformMatrix.inverted().map(event->pos());
 
-    int x = point.x();
-    int y = point.y();
+    const int x = point.x();
+    const int y = point.y();
 
-    int imageHeight = image.getImage().height();
-    int imageWidth = image.getImage().width();
+    const int imageHeight = image.getImage().height();
+    const int imageWidth = image.getImage().width();
     if(x < imageWidth && y < imageHeight)
     {
         if (event->button() == Qt::LeftButton)
@@ -56,8 +53,7 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
             {
                 xMouse = x;
                 yMouse = y;
-                ImageArea clickedArea(image, QPoint(xMouse, yMouse), accuracy);
-                area = clickedArea;
+                area = ImageArea(image, QPoint(xMouse, yMouse), accuracy);
                 ContourBuilder contourNew(&area);
                 contour = contourNew.getSetContours();
                 contour.buildApproximation(fallibility);
@@ -70,55 +66,49 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
 }
 void ImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    const QPoint point = transformMatrix.inverted().map(event->pos());
+    const QPointF cursorPositionf = transformMatrix.inverted().map(event->pos());
+    const QPoint cursorPosition(cursorPositionf.x(), cursorPositionf.y());
 
-    int a = image.getIntensity(point);
+    int a = image.getIntensity(cursorPosition);
     if(a >= 0)
         emit mouseMoved(a);
 
-    if(dragStartPosition != QPoint(0, 0))
+    if(dragStartPosition != QPointF(0, 0))
     {
-        QPoint oldPositionDraggablePoint = (*draggableNode);
-        (*draggableNode) = point;
-        if(isFirstNode)
-        {
-            QVector<QVector<QPoint>> *pointsApproximation;
-            pointsApproximation = contour.getNodesApproximation();
-            for(int i = 0; i < (*pointsApproximation).size(); ++i)
-            {
-                for(int j = 0; j < (*pointsApproximation)[i].size(); ++j)
-                {
-                    if((*pointsApproximation)[i][j] == oldPositionDraggablePoint)
-                        (*pointsApproximation)[i][j] = (*draggableNode);
-                }
-            }
-        }
+        editingNodes(cursorPosition);
         update();
     }
 }
 void ImageWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-    const QPoint point = transformMatrix.inverted().map(event->pos());
+    const QPointF cursorPositionf = transformMatrix.inverted().map(event->pos());
+    const QPoint cursorPosition(cursorPositionf.x(), cursorPositionf.y());
 
-    if(dragStartPosition != QPoint(0, 0))
+    if(dragStartPosition != QPointF(0, 0))
     {
-        QPoint oldPositionDraggablePoint = (*draggableNode);
-        (*draggableNode) = point;
-        if(isFirstNode)
-        {
-            QVector<QVector<QPoint>> *pointsApproximation;
-            pointsApproximation = contour.getNodesApproximation();
-            for(int i = 0; i < (*pointsApproximation).size(); ++i)
-            {
-                for(int j = 0; j < (*pointsApproximation)[i].size(); ++j)
-                {
-                    if((*pointsApproximation)[i][j] == oldPositionDraggablePoint)
-                        (*pointsApproximation)[i][j] = (*draggableNode);
-                }
-            }
-        }
-        dragStartPosition = QPoint(0, 0);
+        editingNodes(cursorPosition);
+        dragStartPosition = QPointF(0, 0);
         update();
+    }
+}
+void ImageWidget::editingNodes(const QPoint &cursorPosition)
+{
+    const QPoint oldPositionDraggablePoint = (*draggableNode);
+    (*draggableNode) = cursorPosition;
+    if(isFirstNode)
+        editingFirstnode(oldPositionDraggablePoint);
+}
+void ImageWidget::editingFirstnode(const QPoint &oldPositionDraggablePoint)
+{
+    QVector<QVector<QPoint>> *pointsApproximation;           // qFind() may will be used
+    pointsApproximation = contour.getNodesApproximation();
+    for(int i = 0; i < (*pointsApproximation).size(); ++i)
+    {
+        for(int j = 0; j < (*pointsApproximation)[i].size(); ++j)
+        {
+            if((*pointsApproximation)[i][j] == oldPositionDraggablePoint)
+                (*pointsApproximation)[i][j] = (*draggableNode);
+        }
     }
 }
 void ImageWidget::paintEvent(QPaintEvent *event)
@@ -128,10 +118,9 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     painter.setMatrix(transformMatrix);
 
     //startDraw = QPointF((this->width() - image.getImage().width()) / 2, (this->height() - image.getImage().height()) / 2);
-    //qDebug() << startDraw << "startDraw here";
 
-    painter.drawImage(QPointF(0, 0), image.getImage());
-    painter.drawImage(QPointF(0, 0), areaImage);
+    painter.drawImage(startDraw, image.getImage());
+    painter.drawImage(startDraw, areaImage);
 
     QVector<QVector<QPoint>> *pointsApproximation;
     pointsApproximation = contour.getNodesApproximation();
@@ -147,39 +136,17 @@ void ImageWidget::paintEvent(QPaintEvent *event)
             painter.drawPoint(points[i] + startDraw);
     }
 }
-/*void ImageWidget::resizeEvent(QResizeEvent *event)
-{
-    QSize sizeWidget = event->size();
-    qreal imageWidth = image.getImage().width();
-    qreal imageHeight = image.getImage().height();
-
-    qreal xOffset = 0.0, yOffset = 0.0;
-    if((imageWidth * scale) < sizeWidget.width())
-        xOffset = (sizeWidget.width() - (imageWidth * scale)) / 2.0;
-    if((imageHeight * scale) < sizeWidget.height())
-        yOffset = (sizeWidget.height() - (imageHeight * scale)) / 2.0;
-    startDraw = QPointF(xOffset, yOffset);
-
-    update();
-}*/
 void ImageWidget::scaleImage()
 {
-    QSize sizeWidget = this->size();
-    qreal imageWidth = image.getImage().width();
-    qreal imageHeight = image.getImage().height();
-    qreal xScale = (qreal)sizeWidget.width() / imageWidth;
-    qreal yScale = (qreal)sizeWidget.height() / imageHeight;
+    transformMatrix.reset();
+    const QSize sizeWidget = this->size();
+    const qreal imageWidth = image.getImage().width();
+    const qreal imageHeight = image.getImage().height();
+    const qreal xScale = (qreal)sizeWidget.width() / imageWidth;
+    const qreal yScale = (qreal)sizeWidget.height() / imageHeight;
 
-    scale =  qMin<qreal>(xScale, yScale);
-
-    qreal xOffset = 0.0, yOffset = 0.0;
-    if((imageWidth * scale) < sizeWidget.width())
-        xOffset = (sizeWidget.width() - (imageWidth * scale)) / 2.0;
-    if((imageHeight * scale) < sizeWidget.height())
-        yOffset = (sizeWidget.height() - (imageHeight * scale)) / 2.0;
-    startDraw = QPointF(xOffset, yOffset);
-
-    transformMatrix.scale(zoom * scale, zoom * scale);
+    zoom *=  qMin<qreal>(xScale, yScale);
+    transformMatrix.scale(zoom, zoom);
     update();
 }
 void ImageWidget::userTransparency(int a)
@@ -194,8 +161,7 @@ void ImageWidget::userFallibility(int a)
     fallibility = a;
     if(xMouse >= 0 && yMouse >= 0)
     {
-        ImageArea clickedArea(image, QPoint(xMouse, yMouse), accuracy);
-        area = clickedArea;
+        area = ImageArea(image, QPoint(xMouse, yMouse), accuracy);
         ContourBuilder contourNew(&area);
         contour = contourNew.getSetContours();
         contour.buildApproximation(fallibility);
@@ -220,8 +186,7 @@ void ImageWidget::userAccuracy(int a)
     accuracy = a;
     if(xMouse >= 0 && yMouse >= 0)
     {
-        ImageArea chosenArea(image, QPoint(xMouse, yMouse), accuracy);
-        area = chosenArea;
+        area = ImageArea(image, QPoint(xMouse, yMouse), accuracy);
         ContourBuilder contourNew(&area);
         contour = contourNew.getSetContours();
         contour.buildApproximation(fallibility);
@@ -246,13 +211,11 @@ void ImageWidget::clearScreen()
 {
     xMouse = -1;
     yMouse = -1;
-    QImage newArea;
-    areaImage = newArea;
-    ContoursSet newContour;
-    contour = newContour;
+    areaImage = QImage();
+    contour = ContoursSet();
     isContourExist = false;
     isFirstNode = false;
-    dragStartPosition = QPoint(0, 0);
+    dragStartPosition = QPointF(0, 0);
     zoom = 1.0;
 }
 void ImageWidget::wheelEvent(QWheelEvent *event)
@@ -271,7 +234,7 @@ void ImageWidget::wheelEvent(QWheelEvent *event)
     }
 
 }
-bool ImageWidget::pointInContour(const QPoint &point)
+bool ImageWidget::pointInContour(const QPoint &cursorPosition)
 {
     if(isContourExist)
     {
@@ -282,7 +245,8 @@ bool ImageWidget::pointInContour(const QPoint &point)
             for(int j = 0; j < (*pointsApproximation)[i].size(); ++j)
             {
                 QPoint node = (*pointsApproximation)[i][j];
-                if(qSqrt(qPow(point.x() - node.x(), 2) + qPow(point.y() - node.y(), 2)) <= thicknessPenNodes)
+                //if(qSqrt(qPow(cursorPosition.x() - node.x(), 2) + qPow(cursorPosition.y() - node.y(), 2)) <= thicknessPenNodes)
+                if((cursorPosition - node).manhattanLength() < thicknessPenNodes)
                 {
                     if(j == 0)
                         isFirstNode = true;

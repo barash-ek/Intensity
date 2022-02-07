@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(CentralWidget);
 
     connect(widget, SIGNAL(signalWidget(QSize)), this, SLOT(slotWidget(QSize)));
-    resize(600, 600);
+    resize(800, 600);
     setWindowTitle(tr("Image"));
 
     bar->setInitialValueSlider(widget->getTransparency());

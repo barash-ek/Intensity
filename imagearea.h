@@ -7,6 +7,8 @@ class ImageArea
     Image image;
     int accuracy;
     QVector<QVector <int> > conditionPoint;
+
+public:
     enum PixelState
     {
         OuterArea = -1,
@@ -15,9 +17,8 @@ class ImageArea
         ContourPoint = 2,
         ArrangeContour = 3,
         InnerVoid = 4,
+        OutImage = 5,
     };
-
-public:
     ImageArea();
     ImageArea(const Image &picture, const QPoint &point, int a);
     Image& getImageObject();
