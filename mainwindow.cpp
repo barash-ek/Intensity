@@ -20,7 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
         CentralWidget->setLayout(imageBar);
     setCentralWidget(CentralWidget);
 
-    connect(widget, SIGNAL(signalWidget(QSize)), this, SLOT(slotWidget(QSize)));
     resize(800, 600);
     setWindowTitle(tr("Image"));
 
@@ -33,8 +32,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(bar, SIGNAL(signalColor()), widget, SLOT(userColor()));
     connect(bar, SIGNAL(accuracyChanged(int)), widget, SLOT(userAccuracy(int)));
     connect(widget, SIGNAL(mouseMoved(int)), bar, SLOT(setValueIntensity(int)));
-
-    connect(widget, SIGNAL(signalSetEnabled(bool)), bar, SLOT(setEnabledSpinBox(bool)));
 }
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -47,8 +44,17 @@ void MainWindow::open()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
                                tr("Open File"), "D:/Inobitec/Dicom/Pictures");
-    if (!fileName.isEmpty())
-        widget->openImage(fileName);
+    if(!fileName.isEmpty())
+    {
+        if(widget->isImageOpened(fileName))
+                widget->openImage(fileName);
+        else
+        {
+            QMessageBox::StandardButton warningImage;
+            warningImage = QMessageBox::warning(this, tr("Warning"),
+                               tr("Image hasn't been opened"));
+        }
+    }
 }
 void MainWindow::createActions()
 {
@@ -72,21 +78,13 @@ void MainWindow::createMenus()
 }
 bool MainWindow::maybeExit()
 {
-       QMessageBox::StandardButton ret;
-       ret = QMessageBox::warning(this, tr("Warning"),
-                          tr("Do you want to quit?"),
-                          QMessageBox::Yes | QMessageBox::No);
-        if (ret == QMessageBox::Yes)
-            return true;
-        else if (ret == QMessageBox::No)
-            return false;
+    QMessageBox::StandardButton ret;
+    ret = QMessageBox::warning(this, tr("Warning"),
+                       tr("Do you want to quit?"),
+                       QMessageBox::Yes | QMessageBox::No);
+     if (ret == QMessageBox::Yes)
+         return true;
+     else if (ret == QMessageBox::No)
+         return false;
     return false;
-}
-void MainWindow::slotWidget(QSize s)
-{
-    int diffHeight = height() - widget->height();
-    int diffWidth = width() - widget->width() - bar->width();
-    widget->resize(s);
-    bar->resize(bar->width(),s.height());
-    this->resize(s.width() + bar->width() + diffWidth, s.height() + diffHeight);
 }

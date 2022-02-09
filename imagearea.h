@@ -7,6 +7,10 @@ class ImageArea
     Image image;
     int accuracy;
     QVector<QVector <int> > conditionPoint;
+    void selectionArea(const QPoint& pointPress);
+    void selectionInnerVoidPoints();
+    void selectionBoundaryPoints();
+    void deleteUnnecessaryPoint();
 
 public:
     enum PixelState

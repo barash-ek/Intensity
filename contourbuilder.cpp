@@ -17,9 +17,11 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
         indicator = false;
         for(int i = 0; i < imageHeight; ++i)
         {
+            const QVector<int>& row = conditionPoint->at(i);
+            const int *rowPointer = &row[0];
             for(int j = 0; j < imageWidth; ++j)
             {
-                if((*conditionPoint)[i][j] == ImageArea::ContourPoint)
+                if(rowPointer[j] == ImageArea::ContourPoint)
                 {
                     x = j;
                     y = i;

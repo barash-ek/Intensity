@@ -99,7 +99,3 @@ void RightBar::setInitialValueFallibility(int a)
 {
     valueFallibility->setValue(a);
 }
-void RightBar::setEnabledSpinBox(bool condition)
-{
-    valueAccuracy->setEnabled(condition);
-}

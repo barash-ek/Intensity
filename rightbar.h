@@ -34,7 +34,6 @@ signals:
 
 public slots:
     void setValueIntensity(int a);
-    void setEnabledSpinBox(bool condition);
 };
 
 #endif // RIGHTBAR_H

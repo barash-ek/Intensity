@@ -24,6 +24,5 @@ protected:
 
 private slots:
     void open();
-    void slotWidget(QSize s);
 };
 #endif //MAINWINDOW_H

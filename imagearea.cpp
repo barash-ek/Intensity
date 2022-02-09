@@ -7,43 +7,68 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
 {
     const int imageHeight = image.getImage().height();
     const int imageWidth = image.getImage().width();
+
     conditionPoint.resize(imageHeight);
     for(int i = 0; i < imageHeight; ++i)
         conditionPoint[i].resize(imageWidth);
-    conditionPoint[point.y()][point.x()] = InnerArea;
-    const int mainIntensity = image.getIntensity(point);
+
+    selectionArea(point);
+    selectionInnerVoidPoints();
+    selectionBoundaryPoints();
+    deleteUnnecessaryPoint();
+}
+void ImageArea::selectionArea(const QPoint& pointPress)
+{
+    const int imageHeight = image.getImage().height();
+    const int imageWidth = image.getImage().width();
     QQueue<QPoint> pointsQueue;
     QVector<QPoint> pointsVector;
-    pointsQueue.enqueue(QPoint(point.x(), point.y()));
-    int x, y, inner = 0, innerVoid = 0, outer = 0;
-    for(int i = 0; i < pointsQueue.size(); ++i)
+
+    conditionPoint[pointPress.y()][pointPress.x()] = InnerArea;
+    const int mainIntensity = image.getIntensity(pointPress);
+    pointsQueue.enqueue(pointPress);
+    int x = -1, y = -1;
+
+    while(!pointsQueue.isEmpty())
     {
-        x = pointsQueue[i].x();
-        y = pointsQueue[i].y();
+        const QPoint &pointInQueue = pointsQueue.dequeue();
+        x = pointInQueue.x();
+        y = pointInQueue.y();
         addPointsFront(pointsVector, x, y, imageWidth, imageHeight);
-        // Выделение области
-        for(int it = 0; it < pointsVector.size();++it)
+
+        for(int i = 0, t = pointsVector.size(); i < t; ++i)
         {
-            if(conditionPoint[pointsVector[it].y()][pointsVector[it].x()] == NoState)
+            const QPoint &point = pointsVector[i];
+            const int xPoint = point.x();
+            const int yPoint = point.y();
+            if(conditionPoint[yPoint][xPoint] == NoState)
             {
-                if(abs(image.getIntensity(pointsVector[it])-mainIntensity) <= accuracy)
+                if(abs(image.getIntensity(point) - mainIntensity) <= accuracy)
                 {
-                    conditionPoint[pointsVector[it].y()][pointsVector[it].x()] = InnerArea;
-                    pointsQueue.enqueue(pointsVector[it]);
+                    conditionPoint[yPoint][xPoint] = InnerArea;
+                    pointsQueue.enqueue(point);
                 }
                 else
-                    conditionPoint[pointsVector[it].y()][pointsVector[it].x()] = OuterArea;
+                    conditionPoint[yPoint][xPoint] = OuterArea;
             }
         }
         pointsVector.clear();
     }
-    // Выделение пустых точек внутри области
+}
+void ImageArea::selectionInnerVoidPoints()
+{
+    const int imageHeight = image.getImage().height();
+    const int imageWidth = image.getImage().width();
+    QVector<QPoint> pointsVector;
     int y_start = 0;
+
     for(int i = 0; i < imageHeight; ++i)
     {
+        const QVector<int>& row = conditionPoint.at(i);
+        const int *rowPointer = &row[0];
         for(int j = 0; j < imageWidth; ++j)
         {
-            if(conditionPoint[i][j] == InnerArea)
+            if(rowPointer[j] == InnerArea)
             {
                 y_start = i;
                 break;
@@ -52,19 +77,23 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
         if(y_start >= 0)
             break;
     }
+
     int k = 0;
     for(int i = y_start; i< imageHeight; ++i)
     {
+        const QVector<int>& row = conditionPoint.at(i);
+        const int *rowPointer = &row[0];
         for(int j = 0; j < imageWidth; ++j)
         {
             k = 0;
-            if(conditionPoint[i][j] == OuterArea)
+            if(rowPointer[j] == OuterArea)
             {
                 addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
                 addPointsDiagonal(pointsVector, j, i, imageWidth, imageHeight);
-                for(int it = 0; it < pointsVector.size(); ++it)
+                for(int i = 0, t = pointsVector.size(); i < t; ++i)
                 {
-                    if(conditionPoint[pointsVector[it].y()][pointsVector[it].x()] == NoState)
+                    const QPoint &point = pointsVector[i];
+                    if(conditionPoint[point.y()][point.x()] == NoState)
                         k++;
                 }
                 if(k == 0)
@@ -73,50 +102,71 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
             }
         }
     }
-        // Выделение граничных точек
-        for(int i = 0; i < imageHeight; ++i)
+}
+void ImageArea::selectionBoundaryPoints()
+{
+    const int imageHeight = image.getImage().height();
+    const int imageWidth = image.getImage().width();
+    QVector<QPoint> pointsVector;
+    int outer = 0;
+
+    for(int i = 0; i < imageHeight; ++i)
+    {
+        const QVector<int>& row = conditionPoint.at(i);
+        const int *rowPointer = &row[0];
+        for(int j = 0; j < imageWidth; ++j)
+        {
+            if(rowPointer[j] == InnerArea || rowPointer[j] == InnerVoid)
             {
-                for(int j = 0; j < imageWidth; ++j)
+                addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
+                for(int i = 0, t  = pointsVector.size(); i < t; ++i)
                 {
-                    if(conditionPoint[i][j] == InnerArea || conditionPoint[i][j] == InnerVoid)
-                    {
-                        addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
-                        for(int it = 0; it < pointsVector.size(); ++it)
-                        {
-                            if(conditionPoint[pointsVector[it].y()][pointsVector[it].x()] == OuterArea)
-                                outer++;
-                        }
-                        if(outer)
-                            conditionPoint[i][j] = ContourPoint;
-                        outer = 0;
-                        pointsVector.clear();
-                    }
+                    const QPoint &point = pointsVector[i];
+                    if(conditionPoint[point.y()][point.x()] == OuterArea)
+                        outer++;
                 }
+                if(outer)
+                    conditionPoint[i][j] = ContourPoint;
+                outer = 0;
+                pointsVector.clear();
             }
-        // Удаление точек, ведущих к самопересечению контура
-        for(int i = 0; i < imageHeight; ++i)
+        }
+     }
+}
+void ImageArea::deleteUnnecessaryPoint()   // Удаление точек, ведущих к самопересечению контура
+{
+    const int imageHeight = image.getImage().height();
+    const int imageWidth = image.getImage().width();
+    QVector<QPoint> pointsVector;
+    int inner = 0, innerVoid = 0;
+
+    for(int i = 0; i < imageHeight; ++i)
+    {
+        const QVector<int>& row = conditionPoint.at(i);
+        const int *rowPointer = &row[0];
+        for(int j = 0; j < imageWidth; ++j)
+        {
+            if(rowPointer[j] == ContourPoint)
             {
-                for(int j = 0; j < imageWidth; ++j)
+                addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
+                addPointsDiagonal(pointsVector, j, i, imageWidth, imageHeight);
+                for(int i = 0, t = pointsVector.size(); i < t; ++i)
                 {
-                    if(conditionPoint[i][j] == ContourPoint)
-                    {
-                        addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
-                        addPointsDiagonal(pointsVector, j, i, imageWidth, imageHeight);
-                        for(int it = 0; it < pointsVector.size(); ++it)
-                        {
-                            if(conditionPoint[pointsVector[it].y()][pointsVector[it].x()] == InnerArea)
-                                inner++;
-                            else if(conditionPoint[pointsVector[it].y()][pointsVector[it].x()] == InnerVoid)
-                                innerVoid++;
-                        }
-                        if(!inner && !innerVoid)
-                            conditionPoint[i][j] = OuterArea;
-                        inner = 0;
-                        innerVoid = 0;
-                        pointsVector.clear();
-                    }
+                    const int x = pointsVector[i].x();
+                    const int y  = pointsVector[i].y();
+                    if(conditionPoint[y][x] == InnerArea)
+                        inner++;
+                    else if(conditionPoint[y][x] == InnerVoid)
+                        innerVoid++;
                 }
+                if(!inner && !innerVoid)
+                    conditionPoint[i][j] = OuterArea;
+                inner = 0;
+                innerVoid = 0;
+                pointsVector.clear();
             }
+        }
+    }
 }
 QImage ImageArea::drawArea(const QColor &color)
 {
@@ -131,7 +181,7 @@ QImage ImageArea::drawArea(const QColor &color)
             /*if(conditionPoint[i][j] == InnerArea)
                 foundArea.setPixelColor(j, i, color);
             else if(conditionPoint[i][j] == ArrangeContour)
-                foundArea.setPixelColor(j, i, Qt::green);
+                foundArea.setPixelColor(j, i, Qt::blue);
             else if(conditionPoint[i][j] == ContourPoint)
                 foundArea.setPixelColor(j, i, Qt::green);
             else if(conditionPoint[i][j] == InnerVoid)

@@ -8,23 +8,25 @@ QVector<Contour>& ContoursSet::getSetContours()
 }
 void ContoursSet::buildApproximation(int fallibility)
 {
-    nodesApproximation.resize(setContours.size());
-    for(int i = 0; i < nodesApproximation.size(); ++i)
+    const int sizeSetContours = setContours.size();
+    nodesApproximation.resize(sizeSetContours);
+    for(int i = 0; i < sizeSetContours; ++i)
     {
         QVector<QPoint> pointsContour = setContours[i].getPoints();
         QVector<QPoint> chosenPoints;
         chosenPoints << pointsContour[0];
         bool condition = true;
-        for(int j = 0; j < pointsContour.size(); ++j)  // j отвечает за стартовую точку
+        for(int j = 0, t = pointsContour.size(); j < t; ++j)  // j отвечает за стартовую точку
         {
             condition = true;
-            QVector2D startPoint(chosenPoints[chosenPoints.size() - 1]);
-            for(int i = j + 1; i < pointsContour.size(); ++i)
+            int sizeChosenPoints = chosenPoints.size();
+            QVector2D startPoint(chosenPoints[sizeChosenPoints - 1]);
+            for(int i = j + 1,  p = pointsContour.size(); i < p; ++i)
             {
                 QVector2D endPoint(pointsContour[i]);
                 QQueue<QVector2D> pointsBetween;
                 for(int k = i - 1; k > j; --k)
-                    if(pointsContour[k] != chosenPoints[chosenPoints.size() - 1])
+                    if(pointsContour[k] != chosenPoints[sizeChosenPoints - 1])
                         pointsBetween.enqueue(QVector2D(pointsContour[k]));
                 if(!pointsBetween.isEmpty())
                 {
@@ -44,7 +46,6 @@ void ContoursSet::buildApproximation(int fallibility)
                     break;
             }
         }
-        chosenPoints << pointsContour[0];
         nodesApproximation[i] = chosenPoints;
     }
 }

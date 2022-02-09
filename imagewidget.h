@@ -24,18 +24,16 @@ private:
     bool isContourExist;
     QPointF dragStartPosition;
     QPoint *draggableNode;
-    bool isFirstNode;
 
     const int thicknessPenNodes;
     const int thicknessPenLines;
 
     void clearScreen();
-    bool pointInContour(const QPoint &cursorPosition);
-    void editingNodes(const QPoint &cursorPosition);
-    void editingFirstnode(const QPoint &oldPositionDraggablePoint);
+    bool isPointNode(const QPoint &cursorPosition);
 
 public:
     ImageWidget(QWidget *parent = nullptr);
+    bool isImageOpened(const QString &fileName);
     void openImage(const QString &fileName);
     int getTransparency();
     int getAccuracy();
@@ -43,9 +41,7 @@ public:
 
 signals:
     void mouseMoved(int a);
-    void signalWidget(QSize s);
     void imageLoaded();
-    void signalSetEnabled(bool condition);
 
 public slots:
     void scaleImage();
