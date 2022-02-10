@@ -25,6 +25,7 @@ ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
 }
 bool ImageWidget::isImageOpened(const QString &fileName)
 {
+    clearScreen();
     image = Image(fileName);
     if(image.getImage().isNull())
         return false;
@@ -33,8 +34,7 @@ bool ImageWidget::isImageOpened(const QString &fileName)
 }
 void ImageWidget::openImage(const QString &fileName)
 {
-    clearScreen();
-    emit imageLoaded();
+    emit imageLoaded();   // чтобы масштабировать изображение под размеры окна
 }
 void ImageWidget::mousePressEvent(QMouseEvent *event)
 {
@@ -62,7 +62,7 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
                 contour = contourNew.getSetContours();
                 contour.buildApproximation(fallibility);
                 isContourExist = true;
-                areaImage = area.drawArea(color);
+                //areaImage = area.drawArea(color);
                 update();
             }
         }
@@ -104,7 +104,7 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     //startDraw = QPointF((this->width() - image.getImage().width()) / 2, (this->height() - image.getImage().height()) / 2);
 
     painter.drawImage(startDraw, image.getImage());
-    painter.drawImage(startDraw, areaImage);
+    //painter.drawImage(startDraw, areaImage);
 
     QVector<QVector<QPoint>> *pointsApproximation;
     pointsApproximation = contour.getNodesApproximation();
@@ -138,7 +138,7 @@ void ImageWidget::userTransparency(int a)
 {
    transparency = a;
    color.setAlpha(transparency);
-   areaImage = area.drawArea(color);
+   //areaImage = area.drawArea(color);
    update();
 }
 void ImageWidget::userFallibility(int a)
@@ -150,7 +150,7 @@ void ImageWidget::userFallibility(int a)
         ContourBuilder contourNew(&area);
         contour = contourNew.getSetContours();
         contour.buildApproximation(fallibility);
-        areaImage = area.drawArea(color);
+        //areaImage = area.drawArea(color);
         update();
     }
 }
@@ -161,7 +161,7 @@ void ImageWidget::userColor()
     {
         colorChosen.setAlpha(transparency);
         color = colorChosen;
-        areaImage = area.drawArea(color);
+        //areaImage = area.drawArea(color);
     }
     update();
 }
@@ -174,7 +174,7 @@ void ImageWidget::userAccuracy(int a)
         ContourBuilder contourNew(&area);
         contour = contourNew.getSetContours();
         contour.buildApproximation(fallibility);
-        areaImage = area.drawArea(color);
+        //areaImage = area.drawArea(color);
         update();
     }
 }

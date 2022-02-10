@@ -33,7 +33,8 @@ void ContoursSet::buildApproximation(int fallibility)
                     QVector2D direction((endPoint - startPoint).normalized());
                     while(!pointsBetween.isEmpty())
                     {
-                        condition = pointsBetween.dequeue().distanceToLine(startPoint, direction) <= fallibility;
+                        const QVector2D &pointInQueue = pointsBetween.dequeue();
+                        condition = pointInQueue.distanceToLine(startPoint, direction) <= fallibility;
                         if(!condition)
                         {
                             chosenPoints << pointsContour[i - 1];

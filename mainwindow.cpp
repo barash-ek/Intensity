@@ -3,7 +3,12 @@
 #include "rightbar.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), widget(new ImageWidget(this)), bar(new RightBar(this)), fileMenu(0x0), openAct(0x0), exitAct(0x0)
+    : QMainWindow(parent),
+      widget(new ImageWidget(this)),
+      bar(new RightBar(this)),
+      fileMenu(0x0),
+      openAct(0x0),
+      exitAct(0x0)
 {
     QPalette pall;
     pall.setColor(this->backgroundRole(), Qt::white);
@@ -52,7 +57,7 @@ void MainWindow::open()
         {
             QMessageBox::StandardButton warningImage;
             warningImage = QMessageBox::warning(this, tr("Warning"),
-                               tr("Image hasn't been opened"));
+                               tr("Image hasn't been opened"));        
         }
     }
 }

@@ -41,7 +41,7 @@ void ImageArea::selectionArea(const QPoint& pointPress)
             const QPoint &point = pointsVector[i];
             const int xPoint = point.x();
             const int yPoint = point.y();
-            if(conditionPoint[yPoint][xPoint] == NoState)
+            if(conditionPoint.at(yPoint).at(xPoint) == NoState)
             {
                 if(abs(image.getIntensity(point) - mainIntensity) <= accuracy)
                 {
@@ -79,7 +79,7 @@ void ImageArea::selectionInnerVoidPoints()
     }
 
     int k = 0;
-    for(int i = y_start; i< imageHeight; ++i)
+    for(int i = y_start; i < imageHeight; ++i)
     {
         const QVector<int>& row = conditionPoint.at(i);
         const int *rowPointer = &row[0];
@@ -93,7 +93,7 @@ void ImageArea::selectionInnerVoidPoints()
                 for(int i = 0, t = pointsVector.size(); i < t; ++i)
                 {
                     const QPoint &point = pointsVector[i];
-                    if(conditionPoint[point.y()][point.x()] == NoState)
+                    if(conditionPoint.at(point.y()).at(point.x()) == NoState)
                         k++;
                 }
                 if(k == 0)
@@ -122,7 +122,7 @@ void ImageArea::selectionBoundaryPoints()
                 for(int i = 0, t  = pointsVector.size(); i < t; ++i)
                 {
                     const QPoint &point = pointsVector[i];
-                    if(conditionPoint[point.y()][point.x()] == OuterArea)
+                    if(conditionPoint.at(point.y()).at(point.x()) == OuterArea)
                         outer++;
                 }
                 if(outer)
@@ -154,9 +154,9 @@ void ImageArea::deleteUnnecessaryPoint()   // Удаление точек, ве�
                 {
                     const int x = pointsVector[i].x();
                     const int y  = pointsVector[i].y();
-                    if(conditionPoint[y][x] == InnerArea)
+                    if(conditionPoint.at(y).at(x) == InnerArea)
                         inner++;
-                    else if(conditionPoint[y][x] == InnerVoid)
+                    else if(conditionPoint.at(y).at(x) == InnerVoid)
                         innerVoid++;
                 }
                 if(!inner && !innerVoid)
@@ -176,18 +176,20 @@ QImage ImageArea::drawArea(const QColor &color)
     QColor transparentColor(0, 0, 0, 0);
     for(int i = 0; i < imageHeight; ++i)
     {
+        //const QVector<int>& row = conditionPoint.at(i);
+        //const int *rowPointer = &row[0];
         for(int j = 0; j < imageWidth; ++j)
         {
-            /*if(conditionPoint[i][j] == InnerArea)
+            /*if(rowPointer[j] == InnerArea)
                 foundArea.setPixelColor(j, i, color);
-            else if(conditionPoint[i][j] == ArrangeContour)
+            else if(rowPointer[j] == ArrangeContour)
                 foundArea.setPixelColor(j, i, Qt::blue);
-            else if(conditionPoint[i][j] == ContourPoint)
+            else if(rowPointer[j] == ContourPoint)
                 foundArea.setPixelColor(j, i, Qt::green);
-            else if(conditionPoint[i][j] == InnerVoid)
+            else if(rowPointer[j] == InnerVoid)
                 foundArea.setPixelColor(j, i, Qt::yellow);
             else*/
-                foundArea.setPixelColor(j, i,transparentColor);
+                foundArea.setPixelColor(j, i, transparentColor);
         }
     }
     return foundArea;

@@ -77,95 +77,98 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
 }
 void ContourBuilder::findAppropriateNeigbours(QVector<QPoint> &points, QVector<int> &states, QVector<QPoint> &neigbours, int x, int y)
 {
-    for(int it = 0; it < points.size(); ++it)
+    for(int i = 0, t = points.size(); i < t; ++i)
     {
-        if((*conditionPoint)[points[it].y()][points[it].x()] == ImageArea::ContourPoint)
+        const QPoint &point = points[i];
+        const int xPoint = point.x();
+        const int yPoint = point.y();
+        if(conditionPoint->at(yPoint).at(xPoint) == ImageArea::ContourPoint)
         {
             states.fill(0);
-            if((points[it].y() == y) && (points[it].x() == (x + 1))) //вправо
+            if((yPoint == y) && (xPoint == (x + 1))) //вправо
             {
                 if(y != (conditionPoint->size() - 1))
                 {
-                    states[0] = (*conditionPoint)[y + 1][x];
-                    states[1] = (*conditionPoint)[y + 1][x + 1];
+                    states[0] = conditionPoint->at(y + 1).at(x);
+                    states[1] = conditionPoint->at(y + 1).at(x + 1);
                 }
                 else
                     states[0] = states[1] = ImageArea::OutImage;
             }
-            else if((points[it].y() == y) && (points[it].x() == (x - 1))) //влево
+            else if((yPoint == y) && (xPoint == (x - 1))) //влево
             {
                 if(y != 0)
                 {
-                    states[0] = (*conditionPoint)[y - 1][x];
-                    states[1] = (*conditionPoint)[y - 1][x - 1];
+                    states[0] = conditionPoint->at(y - 1).at(x);
+                    states[1] = conditionPoint->at(y - 1).at(x - 1);
                 }
                 else
                     states[0] = states[1] = ImageArea::OutImage;
             }
-            else if((points[it].y() == (y - 1)) && (points[it].x() == x)) //вверх
+            else if((yPoint == (y - 1)) && (xPoint == x)) //вверх
             {
                 if(x != (conditionPoint[0].size() - 1))
                 {
-                    states[0] = (*conditionPoint)[y][x + 1];
-                    states[1] = (*conditionPoint)[y - 1][x + 1];
+                    states[0] = conditionPoint->at(y).at(x + 1);
+                    states[1] = conditionPoint->at(y - 1).at(x + 1);
                 }
                 else
                     states[0] = states[1] = ImageArea::OutImage;
             }
-            else if((points[it].y() == (y + 1)) && (points[it].x() == x)) //вниз
+            else if((yPoint == (y + 1)) && (xPoint == x)) //вниз
             {
                 if(x != 0)
                 {
-                    states[0] = (*conditionPoint)[y][x - 1];
-                    states[1] = (*conditionPoint)[y + 1][x - 1];
+                    states[0] = conditionPoint->at(y).at(x - 1);
+                    states[1] = conditionPoint->at(y + 1).at(x - 1);
                 }
                 else
                     states[0] = states[1] = ImageArea::OutImage;
             }
-            else if((points[it].y() == (y - 1)) && (points[it].x() == (x + 1))) // вверх по диагонали вправо
+            else if((yPoint == (y - 1)) && (xPoint == (x + 1))) // вверх по диагонали вправо
             {
-                states[2] = (*conditionPoint)[y][x + 1];
-                states[3] = (*conditionPoint)[y - 1][x];
+                states[2] = conditionPoint->at(y).at(x + 1);
+                states[3] = conditionPoint->at(y - 1).at(x);
             }
-            else if((points[it].y() == (y + 1)) && (points[it].x() == (x + 1))) // вниз по диагонали вправо
+            else if((yPoint == (y + 1)) && (xPoint == (x + 1))) // вниз по диагонали вправо
             {
-                states[2] = (*conditionPoint)[y + 1][x];
-                states[3] = (*conditionPoint)[y][x + 1];
+                states[2] = conditionPoint->at(y + 1).at(x);
+                states[3] = conditionPoint->at(y).at(x + 1);
             }
-            else if((points[it].y() == (y + 1)) && (points[it].x() == (x - 1))) //вниз по диагонали влево
+            else if((yPoint == (y + 1)) && (xPoint == (x - 1))) //вниз по диагонали влево
             {
-                states[2] = (*conditionPoint)[y][x - 1];
-                states[3] = (*conditionPoint)[y + 1][x];
+                states[2] = conditionPoint->at(y).at(x - 1);
+                states[3] = conditionPoint->at(y + 1).at(x);
             }
-            else if((points[it].y() == (y - 1)) && (points[it].x() == (x - 1)))// вверх по диагонали влево
+            else if((yPoint == (y - 1)) && (xPoint == (x - 1)))// вверх по диагонали влево
             {
-                states[2] = (*conditionPoint)[y - 1][x];
-                states[3] = (*conditionPoint)[y][x - 1];
+                states[2] = conditionPoint->at(y - 1).at(x);
+                states[3] = conditionPoint->at(y).at(x - 1);
             }
             if((states[0] == ImageArea::InnerArea && states[1] == ImageArea::ContourPoint) || (states[0] == ImageArea::ContourPoint && states[1] == ImageArea::InnerArea))
-                 neigbours << points[it];
+                 neigbours << point;
             else if((states[0] == ImageArea::InnerVoid && states[1] == ImageArea::ContourPoint) || (states[0] == ImageArea::ContourPoint && states[1] == ImageArea::InnerVoid))
-                neigbours << points[it];
+                neigbours << point;
             else if(states[0] == ImageArea::InnerArea && states[1] == ImageArea::InnerArea)
-                neigbours << points[it];
+                neigbours << point;
             else if(states[0] == ImageArea::InnerVoid && states[1] == ImageArea::InnerVoid)
-                neigbours << points[it];
+                neigbours << point;
             else if((states[0] == ImageArea::ContourPoint && states[1] == ImageArea::ContourPoint) || (states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::ArrangeContour))
-                neigbours << points[it];
+                neigbours << point;
             else if((states[0] == ImageArea::ContourPoint && states[1] == ImageArea::OuterArea) || (states[0] == ImageArea::OuterArea && states[1] == ImageArea::ContourPoint))
-                neigbours << points[it];
+                neigbours << point;
             else if((states[0] == ImageArea::InnerArea && states[1] == ImageArea::InnerVoid) || (states[0] == ImageArea::InnerVoid && states[1] == ImageArea::InnerArea))
-                neigbours << points[it];
+                neigbours << point;
             else if((states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::InnerArea) || (states[0] == ImageArea::InnerArea && states[1] == ImageArea::ArrangeContour))
-                neigbours << points[it];
+                neigbours << point;
             else if((states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::InnerVoid) || (states[0] == ImageArea::InnerVoid && states[1] == ImageArea::ArrangeContour))
-                neigbours << points[it];
+                neigbours << point;
             else if(states[2] == ImageArea::InnerArea && states[3] == ImageArea::OuterArea)
-                 neigbours << points[it];
+                 neigbours << point;
             else if(states[2] == ImageArea::InnerVoid && states[3] == ImageArea::OuterArea)
-                 neigbours << points[it];
+                 neigbours << point;
             else if(states[0] == ImageArea::OutImage && states[1] == ImageArea::OutImage)
-                neigbours << points[it];
+                neigbours << point;
         }
     }
 }
@@ -178,44 +181,48 @@ void ContourBuilder::addNeigbour(QVector<QPoint>& pointsContour, QPoint &point, 
 }
 QPoint& ContourBuilder::findExternalPoint(int xMain, int yMain, QPoint &firstPoint, QPoint &secondPoint)
 {
-    if((firstPoint.x() == xMain) && ((yMain - firstPoint.y()) == 1))
+    const int xFisrt = firstPoint.x();
+    const int yFirst = firstPoint.y();
+    if((xFisrt == xMain) && ((yMain - yFirst) == 1))
     {
-        if((*conditionPoint)[firstPoint.y() - 1][firstPoint.x()] == ImageArea::OuterArea) //если внешняя, то берём другую
+        if(conditionPoint->at(yFirst - 1).at(xFisrt) == ImageArea::OuterArea) //если внешняя, то берём другую
             return secondPoint;
     }
-    else if((firstPoint.x() == xMain) && ((yMain - firstPoint.y()) == -1))
+    else if((xFisrt == xMain) && ((yMain - yFirst) == -1))
     {
-        if((*conditionPoint)[firstPoint.y() + 1][firstPoint.x()] == ImageArea::OuterArea) //если внешняя, то берём другую
+        if(conditionPoint->at(yFirst + 1).at(xFisrt) == ImageArea::OuterArea) //если внешняя, то берём другую
             return secondPoint;
     }
-    else if((firstPoint.y() == yMain) && ((xMain - firstPoint.x()) == 1))
+    else if((yFirst == yMain) && ((xMain - xFisrt) == 1))
     {
-        if((*conditionPoint)[firstPoint.y()][firstPoint.x() - 1] == ImageArea::OuterArea) //если внешняя, то берём другую
+        if(conditionPoint->at(yFirst).at(xFisrt - 1) == ImageArea::OuterArea) //если внешняя, то берём другую
             return secondPoint;
     }
-    else if((firstPoint.y() == yMain) && ((xMain - firstPoint.x()) == -1))
+    else if((yFirst == yMain) && ((xMain - xFisrt) == -1))
     {
-        if((*conditionPoint)[firstPoint.y()][firstPoint.x() + 1] == ImageArea::OuterArea) //если внешняя, то берём другую
+        if(conditionPoint->at(yFirst).at(xFisrt + 1) == ImageArea::OuterArea) //если внешняя, то берём другую
             return secondPoint;
     }
-    if((secondPoint.x() == xMain) && ((yMain - secondPoint.y()) == 1))
+    const int xSecond = secondPoint.x();
+    const int ySecond = secondPoint.y();
+    if((xSecond == xMain) && ((yMain - ySecond) == 1))
     {
-        if((*conditionPoint)[secondPoint.y() - 1][secondPoint.x()] == ImageArea::OuterArea) //если внешняя, то берём другую
+        if(conditionPoint->at(ySecond - 1).at(xSecond) == ImageArea::OuterArea) //если внешняя, то берём другую
             return firstPoint;
     }
-    else if((secondPoint.x() == xMain) && ((yMain - secondPoint.y()) == -1))
+    else if((xSecond == xMain) && ((yMain - ySecond) == -1))
     {
-        if((*conditionPoint)[secondPoint.y() + 1][secondPoint.x()] == ImageArea::OuterArea) //если внешняя, то берём другую
+        if(conditionPoint->at(ySecond + 1).at(xSecond) == ImageArea::OuterArea) //если внешняя, то берём другую
             return firstPoint;
     }
-    else if((secondPoint.y() == yMain) && ((xMain - secondPoint.x()) == 1))
+    else if((ySecond == yMain) && ((xMain - xSecond) == 1))
     {
-        if((*conditionPoint)[secondPoint.y()][secondPoint.x() - 1] == ImageArea::OuterArea) //если внешняя, то берём другую
+        if(conditionPoint->at(ySecond).at(xSecond - 1) == ImageArea::OuterArea) //если внешняя, то берём другую
             return firstPoint;
     }
-    else if((secondPoint.y() == yMain) && ((xMain - secondPoint.x()) == -1))
+    else if((ySecond == yMain) && ((xMain - xSecond) == -1))
     {
-        if((*conditionPoint)[secondPoint.y()][secondPoint.x() + 1] == ImageArea::OuterArea) //если внешняя, то берём другую
+        if(conditionPoint->at(ySecond).at(xSecond + 1) == ImageArea::OuterArea) //если внешняя, то берём другую
             return firstPoint;
     }
     return firstPoint;

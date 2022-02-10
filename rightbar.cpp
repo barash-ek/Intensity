@@ -1,7 +1,17 @@
 #include "rightbar.h"
 
-RightBar::RightBar(QWidget *parent) : QWidget(parent), transparency(0x0), accuracy(0x0), intensity(0x0), valueIntensity(0x0), fallibility(0x0),
-    valueTransparency(0x0), valueFallibility(0x0), valueAccuracy(0x0), colorChoice(0x0),layoutRightBar(0x0), layoutLabel(0x0)
+RightBar::RightBar(QWidget *parent) : QWidget(parent),
+    transparency(0x0),
+    accuracy(0x0),
+    intensity(0x0),
+    valueIntensity(0x0),
+    fallibility(0x0),
+    valueTransparency(0x0),
+    valueFallibility(0x0),
+    valueAccuracy(0x0),
+    colorChoice(0x0),
+    layoutRightBar(0x0),
+    layoutLabel(0x0)
 {
     setAttribute(Qt::WA_StaticContents);
 
