@@ -23,18 +23,17 @@ ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
     setAcceptDrops(true);
     connect(this, SIGNAL(imageLoaded()), this, SLOT(scaleImage()));
 }
-bool ImageWidget::isImageOpened(const QString &fileName)
+bool ImageWidget::openImage(const QString &fileName)
 {
     clearScreen();
     image = Image(fileName);
     if(image.getImage().isNull())
         return false;
     else
+    {
+        emit imageLoaded();   // чтобы масштабировать изображение под размеры окна
         return true;
-}
-void ImageWidget::openImage(const QString &fileName)
-{
-    emit imageLoaded();   // чтобы масштабировать изображение под размеры окна
+    }
 }
 void ImageWidget::mousePressEvent(QMouseEvent *event)
 {

@@ -33,8 +33,7 @@ private:
 
 public:
     ImageWidget(QWidget *parent = nullptr);
-    bool isImageOpened(const QString &fileName);
-    void openImage(const QString &fileName);
+    bool openImage(const QString &fileName);
     int getTransparency();
     int getAccuracy();
     int getFallibility();

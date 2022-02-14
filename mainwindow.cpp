@@ -51,13 +51,11 @@ void MainWindow::open()
                                tr("Open File"), "D:/Inobitec/Dicom/Pictures");
     if(!fileName.isEmpty())
     {
-        if(widget->isImageOpened(fileName))
-                widget->openImage(fileName);
-        else
+        if(!widget->openImage(fileName))
         {
             QMessageBox::StandardButton warningImage;
             warningImage = QMessageBox::warning(this, tr("Warning"),
-                               tr("Image hasn't been opened"));        
+                               tr("Image hasn't been opened"));
         }
     }
 }
