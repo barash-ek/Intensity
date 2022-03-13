@@ -2,7 +2,7 @@
 #include "contoursset.h"
 #include "imagearea.cpp"
 
-ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
+/*ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)   // здесь происходит упорядочение контура
 {
     if(area->getconditionPoint() != nullptr)
         conditionPoint = area->getconditionPoint();
@@ -36,7 +36,7 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
         {
             QVector<QPoint> pointsContour, pointsAuxiliary, pointsNeigbour;
             int quantityNeigbours = 0;
-            QVector<int> pointsState(4);
+            QVector<int> pointsState(4);   // убрать в метод findAppropriateNeighbours
             pointsContour << QPoint(x, y);
             (*conditionPoint)[y][x] = ImageArea::ArrangeContour;
             do
@@ -74,8 +74,169 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
         else
             indicator = false;
     }while(indicator);
+}*/
+ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
+{
+    if(area->getconditionPoint() != nullptr)
+        conditionPoint = area->getconditionPoint();
+    const int imageHeight = area->getImageObject().getImage().height();
+    const int imageWidth = area->getImageObject().getImage().width();
+    int x = -1, y = -1;
+    bool indicator = false;
+    //do
+    //{
+        x = -1;
+        y = -1;
+        indicator = false;
+        for(int i = 0; i < imageHeight; ++i)
+        {
+            const QVector<int>& row = conditionPoint->at(i);
+            const int *rowPointer = &row[0];
+            for(int j = 0; j < imageWidth; ++j)
+            {
+                if(rowPointer[j] == ImageArea::ContourPoint)
+                {
+                    x = j;
+                    y = i;
+                    indicator = true;
+                    break;
+                }
+            }
+            if(indicator)
+                break;
+        }
+        if(x != - 1 && y != - 1)
+        {
+            QVector<QPoint> pointsContour, pointsAuxiliary, pointsNeigbour;
+            QVector<int> states(2);
+            pointsContour << QPoint(x, y);
+            (*conditionPoint)[y][x] = ImageArea::ArrangeContour;
+            int quantityNeigbours = 0;
+            do
+            {
+                area->addPointsFront(pointsAuxiliary, x, y, imageWidth, imageHeight);
+                for(int i = 0, t = pointsAuxiliary.size(); i < t; ++i)
+                {
+                    const QPoint &point = pointsAuxiliary[i];
+                    if(conditionPoint->at(point.y()).at(point.x()) == ImageArea::ContourPoint)
+                    {
+                        saveInformationAboutNeigbour(point, states, x, y);
+                        if(isAppropriateNeigbour(point, states))
+                            pointsNeigbour << point;
+                    }
+                }
+                quantityNeigbours = pointsNeigbour.size();
+                if(quantityNeigbours == 1)
+                {
+                    addNeigbour(pointsContour, pointsNeigbour[0], x, y);
+                }
+                else if(quantityNeigbours == 2)
+                {
+                    //quantityNeigbours = 0;
+                    QVector<QPoint> additionalPointsAuxiliary;
+                    const QPoint &explorePoint = pointsNeigbour[0];
+                    const int xPoint = explorePoint.x();
+                    const int yPoint = explorePoint.y();
+                    bool condition = true;
+                    area->addPointsFront(additionalPointsAuxiliary, xPoint, yPoint, imageWidth, imageHeight);
+                    for(int i = 0, t = pointsAuxiliary.size(); i < t; ++i)
+                    {
+                        const QPoint &point = pointsAuxiliary[i];
+                        if(conditionPoint->at(point.y()).at(point.x()) == ImageArea::ContourPoint)
+                        {
+                            QVector<int> additionalStates(2);
+                            saveInformationAboutNeigbour(point, additionalStates, x, y);
+                            if(!isAppropriateNeigbour(point, additionalStates))
+                            {
+                                condition = false;
+                                break;
+                            }
+                        }
+                     }
+                    if(condition)
+                        addNeigbour(pointsContour, pointsNeigbour[0], x, y);
+                    else
+                        addNeigbour(pointsContour, pointsNeigbour[1], x, y);
+                }
+                pointsNeigbour.clear();
+                pointsAuxiliary.clear();
+             }while(quantityNeigbours);
+             pointsContour << pointsContour[0];
+             Contour contour(&pointsContour);
+             setContours << contour;
+        }
+        else
+            indicator = false;
+    //}while(indicator);
 }
-void ContourBuilder::findAppropriateNeigbours(QVector<QPoint> &points, QVector<int> &states, QVector<QPoint> &neigbours, int x, int y)
+void ContourBuilder::saveInformationAboutNeigbour(const QPoint &point, QVector<int> &states, int x, int y)
+{
+    int xPoint = point.x();
+    int yPoint = point.y();
+    states.fill(0);
+    if((yPoint == y) && (xPoint == (x + 1))) //сосед справа
+    {
+        if(y != (conditionPoint->size() - 1))
+        {
+            states[0] = conditionPoint->at(y + 1).at(x);
+            states[1] = conditionPoint->at(y + 1).at(x + 1);
+        }
+        else
+            states[0] = states[1] = ImageArea::OutImage;
+    }
+    else if((yPoint == y) && (xPoint == (x - 1))) //сосед слева
+    {
+        if(y != 0)
+        {
+            states[0] = conditionPoint->at(y - 1).at(x);
+            states[1] = conditionPoint->at(y - 1).at(x - 1);
+        }
+        else
+            states[0] = states[1] = ImageArea::OutImage;
+    }
+    else if((yPoint == (y - 1)) && (xPoint == x)) //сосед сверху
+    {
+        if(x != (conditionPoint[0].size() - 1))
+        {
+            states[0] = conditionPoint->at(y).at(x + 1);
+            states[1] = conditionPoint->at(y - 1).at(x + 1);
+        }
+        else
+            states[0] = states[1] = ImageArea::OutImage;
+    }
+    else if((yPoint == (y + 1)) && (xPoint == x)) //сосед снизу
+    {
+        if(x != 0)
+        {
+            states[0] = conditionPoint->at(y).at(x - 1);
+            states[1] = conditionPoint->at(y + 1).at(x - 1);
+        }
+        else
+            states[0] = states[1] = ImageArea::OutImage;
+    }
+}
+bool ContourBuilder::isAppropriateNeigbour(const QPoint &point, QVector<int> &states)
+{
+    bool condition = false;
+    if((states[0] == ImageArea::InnerArea && states[1] == ImageArea::ContourPoint) || (states[0] == ImageArea::ContourPoint && states[1] == ImageArea::InnerArea))
+         condition = true;
+    else if((states[0] == ImageArea::InnerVoid && states[1] == ImageArea::ContourPoint) || (states[0] == ImageArea::ContourPoint && states[1] == ImageArea::InnerVoid))
+         condition = true;
+    else if((states[0] == ImageArea::InnerArea && states[1] == ImageArea::InnerVoid) || (states[0] == ImageArea::InnerVoid && states[1] == ImageArea::InnerArea))
+         condition = true;
+    else if(states[0] == ImageArea::InnerArea && states[1] == ImageArea::InnerArea)
+         condition = true;
+    else if(states[0] == ImageArea::InnerVoid && states[1] == ImageArea::InnerVoid)
+         condition = true;
+    else if(states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::InnerArea)
+         condition = true;
+    else if(states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::InnerVoid)
+         condition = true;
+    else if(states[0] == ImageArea::OutImage && states[1] == ImageArea::OutImage)
+         condition = true;
+    return condition;
+}
+/*void ContourBuilder::findAppropriateNeigbours(QVector<QPoint> &points, QVector<int> &states, QVector<QPoint> &neigbours, int x, int y)
 {
     for(int i = 0, t = points.size(); i < t; ++i)
     {
@@ -153,15 +314,15 @@ void ContourBuilder::findAppropriateNeigbours(QVector<QPoint> &points, QVector<i
                 neigbours << point;
             else if(states[0] == ImageArea::InnerVoid && states[1] == ImageArea::InnerVoid)
                 neigbours << point;
-            else if((states[0] == ImageArea::ContourPoint && states[1] == ImageArea::ContourPoint) || (states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::ArrangeContour))
+           / else if((states[0] == ImageArea::ContourPoint && states[1] == ImageArea::ContourPoint) || (states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::ArrangeContour))
                 neigbours << point;
-            else if((states[0] == ImageArea::ContourPoint && states[1] == ImageArea::OuterArea) || (states[0] == ImageArea::OuterArea && states[1] == ImageArea::ContourPoint))
+           / else if((states[0] == ImageArea::ContourPoint && states[1] == ImageArea::OuterArea) || (states[0] == ImageArea::OuterArea && states[1] == ImageArea::ContourPoint))
                 neigbours << point;
             else if((states[0] == ImageArea::InnerArea && states[1] == ImageArea::InnerVoid) || (states[0] == ImageArea::InnerVoid && states[1] == ImageArea::InnerArea))
                 neigbours << point;
-            else if((states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::InnerArea) || (states[0] == ImageArea::InnerArea && states[1] == ImageArea::ArrangeContour))
+           / else if((states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::InnerArea) || (states[0] == ImageArea::InnerArea && states[1] == ImageArea::ArrangeContour))
                 neigbours << point;
-            else if((states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::InnerVoid) || (states[0] == ImageArea::InnerVoid && states[1] == ImageArea::ArrangeContour))
+           / else if((states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::InnerVoid) || (states[0] == ImageArea::InnerVoid && states[1] == ImageArea::ArrangeContour))
                 neigbours << point;
             else if(states[2] == ImageArea::InnerArea && states[3] == ImageArea::OuterArea)
                  neigbours << point;
@@ -171,7 +332,7 @@ void ContourBuilder::findAppropriateNeigbours(QVector<QPoint> &points, QVector<i
                 neigbours << point;
         }
     }
-}
+}*/
 void ContourBuilder::addNeigbour(QVector<QPoint>& pointsContour, QPoint &point, int &x, int &y)
 {
     y = point.y();

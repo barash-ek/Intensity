@@ -119,6 +119,7 @@ void ImageArea::selectionBoundaryPoints()
             if(rowPointer[j] == InnerArea || rowPointer[j] == InnerVoid)
             {
                 addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
+                addPointsDiagonal(pointsVector, j, i, imageWidth, imageHeight);
                 for(int i = 0, t  = pointsVector.size(); i < t; ++i)
                 {
                     const QPoint &point = pointsVector[i];
@@ -176,19 +177,19 @@ QImage ImageArea::drawArea(const QColor &color)
     QColor transparentColor(0, 0, 0, 0);
     for(int i = 0; i < imageHeight; ++i)
     {
-        //const QVector<int>& row = conditionPoint.at(i);
-        //const int *rowPointer = &row[0];
+        const QVector<int>& row = conditionPoint.at(i);
+        const int *rowPointer = &row[0];
         for(int j = 0; j < imageWidth; ++j)
         {
-            /*if(rowPointer[j] == InnerArea)
+            if(rowPointer[j] == InnerArea)
                 foundArea.setPixelColor(j, i, color);
-            else if(rowPointer[j] == ArrangeContour)
+            /*else if(rowPointer[j] == ArrangeContour)
                 foundArea.setPixelColor(j, i, Qt::blue);
             else if(rowPointer[j] == ContourPoint)
                 foundArea.setPixelColor(j, i, Qt::green);
             else if(rowPointer[j] == InnerVoid)
-                foundArea.setPixelColor(j, i, Qt::yellow);
-            else*/
+                foundArea.setPixelColor(j, i, Qt::yellow);*/
+            else
                 foundArea.setPixelColor(j, i, transparentColor);
         }
     }
