@@ -10,8 +10,8 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
     const int imageWidth = area->getImageObject().getImage().width();
     int x = -1, y = -1;
     bool indicator = false;
-    //do
-    //{
+    do
+    {
         x = -1;
         y = -1;
         indicator = false;
@@ -59,32 +59,18 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
                 }
                 else if(quantityNeigbours == 2)
                 {
-                    /*//quantityNeigbours = 0;
-                    QVector<QPoint> additionalPointsAuxiliary;
-                    const QPoint &explorePoint = pointsNeigbour[0];
-                    const int xPoint = explorePoint.x();
-                    const int yPoint = explorePoint.y();
-                    bool condition = true;
-                    area->addPointsFront(additionalPointsAuxiliary, xPoint, yPoint, imageWidth, imageHeight);
-                    for(int i = 0, t = pointsAuxiliary.size(); i < t; ++i)
-                    {
-                        const QPoint &point = pointsAuxiliary[i];
-                        if(conditionPoint->at(point.y()).at(point.x()) == ImageArea::ContourPoint)
-                        {
-                            QVector<int> additionalStates(2);
-                            saveInformationAboutNeigbour(point, additionalStates, x, y);
-                            if(!isAppropriateNeigbour(point, additionalStates))
-                            {
-                                condition = false;
-                                break;
-                            }
-                        }
-                     }
-                    if(condition)
+                    bool resultFirstNeigbour = leftNeigbourNotFromArea(pointsNeigbour[0], QPoint(x, y));
+                    bool resultSecondNeigbour = leftNeigbourNotFromArea(pointsNeigbour[1], QPoint(x, y));
+
+                    if(resultFirstNeigbour && !resultSecondNeigbour)
                         addNeigbour(pointsContour, pointsNeigbour[0], x, y);
+                    else if(!resultFirstNeigbour && resultSecondNeigbour)
+                        addNeigbour(pointsContour, pointsNeigbour[1], x, y);
                     else
-                        addNeigbour(pointsContour, pointsNeigbour[1], x, y);*/
-                    quantityNeigbours = 0;
+                    {
+                        qDebug() << "You're in such case...";
+                        quantityNeigbours = 0;
+                    }
                 }
                 pointsNeigbour.clear();
                 pointsAuxiliary.clear();
@@ -95,7 +81,7 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
         }
         else
             indicator = false;
-    //}while(indicator);
+    }while(indicator);
 }
 void ContourBuilder::saveInformationAboutNeigbour(const QPoint &point, QVector<int> &states, int x, int y)
 {
@@ -160,6 +146,10 @@ bool ContourBuilder::isAppropriateNeigbour(const QPoint &point, QVector<int> &st
          condition = true;
     else if(states[0] == ImageArea::ArrangeContour && states[1] == ImageArea::InnerVoid)
          condition = true;
+    else if(states[0] == ImageArea::InnerArea && states[1] == ImageArea::ArrangeContour)
+         condition = true;
+    else if(states[0] == ImageArea::InnerVoid && states[1] == ImageArea::ArrangeContour)
+         condition = true;
     else if(states[0] == ImageArea::OutImage && states[1] == ImageArea::OutImage)
          condition = true;
     return condition;
@@ -218,6 +208,43 @@ QPoint& ContourBuilder::findExternalPoint(int xMain, int yMain, QPoint &firstPoi
             return firstPoint;
     }
     return firstPoint;
+}
+
+bool ContourBuilder::leftNeigbourNotFromArea(const QPoint &neigbour, const QPoint &point)
+{
+    int xNeigbour = neigbour.x();
+    int yNeigbour = neigbour.y();
+
+    int xPoint = point.x();
+    int yPoint = point.y();
+
+    if (xNeigbour == xPoint)
+    {
+        if(yNeigbour == yPoint + 1)
+        {
+            if(conditionPoint->at(yNeigbour).at(xNeigbour + 1) == ImageArea::OuterArea)
+                return true;
+        }
+        else if(yNeigbour == yPoint - 1)
+        {
+            if(conditionPoint->at(yNeigbour).at(xNeigbour - 1) == ImageArea::OuterArea)
+                return true;
+        }
+    }
+    else if(yNeigbour == yPoint)
+    {
+        if(xNeigbour == xPoint + 1)
+        {
+            if(conditionPoint->at(yNeigbour - 1).at(xNeigbour) == ImageArea::OuterArea)
+                return true;
+        }
+        else if(xNeigbour == xPoint - 1)
+        {
+            if(conditionPoint->at(yNeigbour + 1).at(xNeigbour) == ImageArea::OuterArea)
+                return true;
+        }
+    }
+    return false;
 }
 ContoursSet& ContourBuilder::getSetContours()
 {

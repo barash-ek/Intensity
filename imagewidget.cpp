@@ -58,8 +58,8 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
                 yMouse = y;
                 area = ImageArea(image, QPoint(xMouse, yMouse), accuracy);
                 ContourBuilder contourNew(&area);
-                /*contour = contourNew.getSetContours();
-                contour.buildApproximation(fallibility);*/
+                contour = contourNew.getSetContours();
+                contour.buildApproximation(fallibility);
                 isContourExist = true;
                 areaImage = area.drawArea(color);
                 update();
@@ -105,7 +105,7 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     painter.drawImage(startDraw, image.getImage());
     painter.drawImage(startDraw, areaImage);
 
-    /*QVector<QVector<QPoint>> *pointsApproximation;
+    QVector<QVector<QPoint>> *pointsApproximation;
     pointsApproximation = contour.getNodesApproximation();
     for(int k = 0, t = pointsApproximation->size(); k < t; ++k)
     {
@@ -118,7 +118,7 @@ void ImageWidget::paintEvent(QPaintEvent *event)
         painter.setPen(QPen(Qt::magenta, thicknessPenNodes));
         for(int i = 0, p = points.size(); i < p; ++i)
             painter.drawPoint(points[i] + startDraw);
-    }*/
+    }
 }
 void ImageWidget::scaleImage()
 {
@@ -147,8 +147,8 @@ void ImageWidget::userFallibility(int a)
     {
         area = ImageArea(image, QPoint(xMouse, yMouse), accuracy);
         ContourBuilder contourNew(&area);
-        /*contour = contourNew.getSetContours();
-        contour.buildApproximation(fallibility);*/
+        contour = contourNew.getSetContours();
+        contour.buildApproximation(fallibility);
         areaImage = area.drawArea(color);
         update();
     }
@@ -171,8 +171,8 @@ void ImageWidget::userAccuracy(int a)
     {
         area = ImageArea(image, QPoint(xMouse, yMouse), accuracy);
         ContourBuilder contourNew(&area);
-        /*contour = contourNew.getSetContours();
-        contour.buildApproximation(fallibility);*/
+        contour = contourNew.getSetContours();
+        contour.buildApproximation(fallibility);
         areaImage = area.drawArea(color);
         update();
     }

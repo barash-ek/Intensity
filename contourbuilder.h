@@ -12,6 +12,7 @@ class ContourBuilder
     bool isAppropriateNeigbour(const QPoint &point, QVector<int> &states);
     void addNeigbour(QVector<QPoint>& pointsContour, QPoint &point, int &x, int &y);
     QPoint& findExternalPoint(int xMain, int yMain, QPoint &firstPoint, QPoint &secondPoint);
+    bool leftNeigbourNotFromArea(const QPoint &neigbour, const QPoint &point);
 
 public:
     ContourBuilder(ImageArea *area = nullptr);

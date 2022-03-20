@@ -222,7 +222,7 @@ QImage ImageArea::drawArea(const QColor &color)
         const int *rowPointer = &row[0];
         for(int j = 0; j < imageWidth; ++j)
         {
-            if(rowPointer[j] == InnerArea)
+            /*if(rowPointer[j] == InnerArea)
                 foundArea.setPixelColor(j, i, color);
             else if(rowPointer[j] == ArrangeContour)
                 foundArea.setPixelColor(j, i, Qt::blue);
@@ -230,7 +230,7 @@ QImage ImageArea::drawArea(const QColor &color)
                 foundArea.setPixelColor(j, i, Qt::green);
             else if(rowPointer[j] == InnerVoid)
                 foundArea.setPixelColor(j, i, Qt::yellow);
-            else
+            else*/
                 foundArea.setPixelColor(j, i, transparentColor);
         }
     }
