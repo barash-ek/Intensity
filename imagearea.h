@@ -11,6 +11,7 @@ class ImageArea
     void selectionInnerVoidPoints();
     void selectionBoundaryPoints();
     void deleteUnnecessaryPoint();
+    void adjustVicinityComplicatedPoint();
 
 public:
     enum PixelState

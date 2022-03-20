@@ -16,6 +16,7 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
     selectionInnerVoidPoints();
     selectionBoundaryPoints();
     deleteUnnecessaryPoint();
+    adjustVicinityComplicatedPoint();
 }
 void ImageArea::selectionArea(const QPoint& pointPress)
 {
@@ -151,10 +152,10 @@ void ImageArea::deleteUnnecessaryPoint()   // Удаление точек, ве�
             {
                 addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
                 addPointsDiagonal(pointsVector, j, i, imageWidth, imageHeight);
-                for(int i = 0, t = pointsVector.size(); i < t; ++i)
+                for(int k = 0, t = pointsVector.size(); k < t; ++k)
                 {
-                    const int x = pointsVector[i].x();
-                    const int y  = pointsVector[i].y();
+                    const int x = pointsVector[k].x();
+                    const int y  = pointsVector[k].y();
                     if(conditionPoint.at(y).at(x) == InnerArea)
                         inner++;
                     else if(conditionPoint.at(y).at(x) == InnerVoid)
@@ -168,6 +169,46 @@ void ImageArea::deleteUnnecessaryPoint()   // Удаление точек, ве�
             }
         }
     }
+}
+
+void ImageArea::adjustVicinityComplicatedPoint()
+{
+    const int imageHeight = image.getImage().height();
+    const int imageWidth = image.getImage().width();
+    QVector<QPoint> pointsVector;
+
+    for(int i = 0; i < imageHeight; ++i)
+        {
+            const QVector<int>& row = conditionPoint.at(i);
+            const int *rowPointer = &row[0];
+            for(int j = 0; j < imageWidth; ++j)
+            {
+                if(rowPointer[j] == ContourPoint)
+                {
+                    addPointsFront(pointsVector, j, i, imageWidth, imageHeight);
+                    int quantityNeighbours = 0;
+                    for(int k = 0, t = pointsVector.size(); k < t; ++k)
+                    {
+                        const int x = pointsVector[k].x();
+                        const int y  = pointsVector[k].y();
+                        if(conditionPoint.at(y).at(x) == ContourPoint)
+                            quantityNeighbours++;
+                    }
+                    if(quantityNeighbours == 4)
+                    {
+                        conditionPoint[i][j]= InnerArea;
+                        addPointsDiagonal(pointsVector, j, i, imageWidth, imageHeight);
+                        for(int k = 0, t = pointsVector.size(); k < t; ++k)
+                        {
+                            const int x = pointsVector[k].x();
+                            const int y  = pointsVector[k].y();
+                            if(conditionPoint.at(y).at(x) == OuterArea)
+                                conditionPoint[y][x] = ContourPoint;
+                        }
+                    }
+                }
+            }
+        }
 }
 QImage ImageArea::drawArea(const QColor &color)
 {
@@ -183,12 +224,12 @@ QImage ImageArea::drawArea(const QColor &color)
         {
             if(rowPointer[j] == InnerArea)
                 foundArea.setPixelColor(j, i, color);
-            /*else if(rowPointer[j] == ArrangeContour)
+            else if(rowPointer[j] == ArrangeContour)
                 foundArea.setPixelColor(j, i, Qt::blue);
             else if(rowPointer[j] == ContourPoint)
                 foundArea.setPixelColor(j, i, Qt::green);
             else if(rowPointer[j] == InnerVoid)
-                foundArea.setPixelColor(j, i, Qt::yellow);*/
+                foundArea.setPixelColor(j, i, Qt::yellow);
             else
                 foundArea.setPixelColor(j, i, transparentColor);
         }
