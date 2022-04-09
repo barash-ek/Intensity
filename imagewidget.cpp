@@ -44,7 +44,7 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
 
     const int imageHeight = image.getImage().height();
     const int imageWidth = image.getImage().width();
-    if(x < imageWidth && y < imageHeight)
+    if((0 <= x && x < imageWidth) && (0 <= y && y < imageHeight))
     {
         if (event->button() == Qt::LeftButton)
         {
