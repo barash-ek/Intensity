@@ -15,6 +15,7 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
     selectionArea(point);
     selectionInnerVoidPoints();
     selectionBoundaryPoints();
+    turnInnerPointsToContourPoint();
     deleteUnnecessaryPoint();
     adjustVicinityComplicatedPoint();
 }
@@ -208,7 +209,38 @@ void ImageArea::adjustVicinityComplicatedPoint()
                     }
                 }
             }
-        }
+    }
+}
+
+void ImageArea::turnInnerPointsToContourPoint()
+{
+    const int imageHeight = image.getImage().height();
+    const int imageWidth = image.getImage().width();
+
+    for(int i = 0; i < imageWidth; ++i)
+    {
+        int &valuePoint = conditionPoint[0][i];
+        if(valuePoint == InnerArea || valuePoint == InnerVoid)
+            valuePoint = ContourPoint;
+    }
+    for(int i = 0; i < imageWidth; ++i)
+    {
+        int &valuePoint = conditionPoint[imageHeight - 1][i];
+        if(valuePoint == InnerArea || valuePoint == InnerVoid)
+            valuePoint = ContourPoint;
+    }
+    for(int i = 0; i < imageHeight; ++i)
+    {
+        int &valuePoint = conditionPoint[i][0];
+        if(valuePoint == InnerArea || valuePoint == InnerVoid)
+            valuePoint = ContourPoint;
+    }
+    for(int i = 0; i < imageHeight; ++i)
+    {
+        int &valuePoint = conditionPoint[i][imageWidth - 1];
+        if(valuePoint == InnerArea || valuePoint == InnerVoid)
+            valuePoint = ContourPoint;
+    }
 }
 QImage ImageArea::drawArea(const QColor &color)
 {

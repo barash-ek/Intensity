@@ -38,6 +38,7 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
             QVector<int> states(2);
             pointsContour << QPoint(x, y);
             (*conditionPoint)[y][x] = ImageArea::ArrangeContour;
+            // проверка, внутренний контур или внешний
             int quantityNeigbours = 0;
             do
             {
@@ -59,8 +60,8 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
                 }
                 else if(quantityNeigbours == 2)
                 {
-                    bool resultFirstNeigbour = leftNeigbourNotFromArea(pointsNeigbour[0], QPoint(x, y));
-                    bool resultSecondNeigbour = leftNeigbourNotFromArea(pointsNeigbour[1], QPoint(x, y));
+                    bool resultFirstNeigbour = leftNeigbourNotFromArea(pointsNeigbour[0], QPoint(x, y), imageWidth, imageHeight);
+                    bool resultSecondNeigbour = leftNeigbourNotFromArea(pointsNeigbour[1], QPoint(x, y), imageWidth, imageHeight);
 
                     if(resultFirstNeigbour && !resultSecondNeigbour)
                         addNeigbour(pointsContour, pointsNeigbour[0], x, y);
@@ -68,6 +69,7 @@ ContourBuilder::ContourBuilder(ImageArea *area): conditionPoint(0x0)
                         addNeigbour(pointsContour, pointsNeigbour[1], x, y);
                     else
                     {
+                        qDebug() << resultFirstNeigbour << resultSecondNeigbour;
                         qDebug() << "You're in such case...";
                         quantityNeigbours = 0;
                     }
@@ -210,7 +212,7 @@ QPoint& ContourBuilder::findExternalPoint(int xMain, int yMain, QPoint &firstPoi
     return firstPoint;
 }
 
-bool ContourBuilder::leftNeigbourNotFromArea(const QPoint &neigbour, const QPoint &point)
+bool ContourBuilder::leftNeigbourNotFromArea(const QPoint &neigbour, const QPoint &point, int imageWidth, int imageHeight)
 {
     int xNeigbour = neigbour.x();
     int yNeigbour = neigbour.y();
@@ -222,12 +224,22 @@ bool ContourBuilder::leftNeigbourNotFromArea(const QPoint &neigbour, const QPoin
     {
         if(yNeigbour == yPoint + 1)
         {
-            if(conditionPoint->at(yNeigbour).at(xNeigbour + 1) == ImageArea::OuterArea)
+            if(xNeigbour != (imageWidth - 1))
+            {
+                if(conditionPoint->at(yNeigbour).at(xNeigbour + 1) == ImageArea::OuterArea)
+                    return true;
+            }
+            else
                 return true;
         }
         else if(yNeigbour == yPoint - 1)
         {
-            if(conditionPoint->at(yNeigbour).at(xNeigbour - 1) == ImageArea::OuterArea)
+            if(xNeigbour != 0)
+            {
+                if(conditionPoint->at(yNeigbour).at(xNeigbour - 1) == ImageArea::OuterArea)
+                    return true;
+            }
+            else
                 return true;
         }
     }
@@ -235,12 +247,22 @@ bool ContourBuilder::leftNeigbourNotFromArea(const QPoint &neigbour, const QPoin
     {
         if(xNeigbour == xPoint + 1)
         {
-            if(conditionPoint->at(yNeigbour - 1).at(xNeigbour) == ImageArea::OuterArea)
+            if(yNeigbour != 0)
+            {
+                if(conditionPoint->at(yNeigbour - 1).at(xNeigbour) == ImageArea::OuterArea)
+                    return true;
+            }
+            else
                 return true;
         }
         else if(xNeigbour == xPoint - 1)
         {
-            if(conditionPoint->at(yNeigbour + 1).at(xNeigbour) == ImageArea::OuterArea)
+            if(yNeigbour != (imageHeight - 1))
+            {
+                if(conditionPoint->at(yNeigbour + 1).at(xNeigbour) == ImageArea::OuterArea)
+                    return true;
+            }
+            else
                 return true;
         }
     }
