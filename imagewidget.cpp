@@ -110,14 +110,17 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     for(int k = 0, t = pointsApproximation->size(); k < t; ++k)
     {
         const QVector<QPoint> &points = pointsApproximation->at(k);
-        painter.setPen(QPen(Qt::blue, thicknessPenLines));
-        for(int i = 0, p = points.size() - 1; i < p; ++i)
-            painter.drawLine(points[i] + startDraw, points[i + 1] + startDraw);
-        painter.drawLine(points[points.size() - 1] + startDraw, points[0] + startDraw);    // для соединения с первой точкой контура
+        if(points.size() > 2)
+        {
+            painter.setPen(QPen(Qt::blue, thicknessPenLines));
+            for(int i = 0, p = points.size() - 1; i < p; ++i)
+                painter.drawLine(points[i] + startDraw, points[i + 1] + startDraw);
+            painter.drawLine(points[points.size() - 1] + startDraw, points[0] + startDraw);    // для соединения с первой точкой контура
 
-        painter.setPen(QPen(Qt::magenta, thicknessPenNodes));
-        for(int i = 0, p = points.size(); i < p; ++i)
-            painter.drawPoint(points[i] + startDraw);
+            painter.setPen(QPen(Qt::magenta, thicknessPenNodes));
+            for(int i = 0, p = points.size(); i < p; ++i)
+                painter.drawPoint(points[i] + startDraw);
+        }
     }
 }
 void ImageWidget::scaleImage()
