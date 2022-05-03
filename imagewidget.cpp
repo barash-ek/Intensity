@@ -9,6 +9,8 @@ ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
     color(255, 0, 0, transparency),
     accuracy(10),
     fallibility(2),
+    stateArea(false),
+    stateInnerContours(true),
     zoom(1.0),
     startDraw(0.0, 0.0),
     isContourExist(false),
@@ -58,8 +60,8 @@ void ImageWidget::mousePressEvent(QMouseEvent *event)
                 yMouse = y;
                 area = ImageArea(image, QPoint(xMouse, yMouse), accuracy);
                 ContourBuilder contourNew(&area);
-                contour = contourNew.getSetContours();
-                contour.buildApproximation(fallibility);
+                contours = contourNew.getSetContours();
+                contours.buildApproximation(fallibility);
                 isContourExist = true;
                 areaImage = area.drawArea(color);
                 update();
@@ -103,10 +105,24 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     //startDraw = QPointF((this->width() - image.getImage().width()) / 2, (this->height() - image.getImage().height()) / 2);
 
     painter.drawImage(startDraw, image.getImage());
-    painter.drawImage(startDraw, areaImage);
+    if(stateArea)
+        painter.drawImage(startDraw, areaImage);
 
-    QVector<QVector<QPoint>> *pointsApproximation;
-    pointsApproximation = contour.getNodesApproximation();
+    QVector<QVector<QPoint>> *pointsApproximation = Q_NULLPTR;
+    QVector<QVector<QPoint>> vectorAuxiliary;
+    if(stateInnerContours)
+        pointsApproximation = contours.getNodesApproximation();
+    else
+    {
+        QVector<QVector<QPoint>> *nodesApproximation = contours.getNodesApproximation();
+        QVector<Contour> setContours = contours.getSetContours();
+        for(int i = 0, s = setContours.size(); i < s; ++i)
+        {
+            if(setContours[i].getStateContour())
+                vectorAuxiliary << nodesApproximation->at(i);
+        }
+        pointsApproximation = &vectorAuxiliary;
+    }
     for(int k = 0, t = pointsApproximation->size(); k < t; ++k)
     {
         const QVector<QPoint> &points = pointsApproximation->at(k);
@@ -150,8 +166,8 @@ void ImageWidget::userFallibility(int a)
     {
         area = ImageArea(image, QPoint(xMouse, yMouse), accuracy);
         ContourBuilder contourNew(&area);
-        contour = contourNew.getSetContours();
-        contour.buildApproximation(fallibility);
+        contours = contourNew.getSetContours();
+        contours.buildApproximation(fallibility);
         areaImage = area.drawArea(color);
         update();
     }
@@ -174,11 +190,23 @@ void ImageWidget::userAccuracy(int a)
     {
         area = ImageArea(image, QPoint(xMouse, yMouse), accuracy);
         ContourBuilder contourNew(&area);
-        contour = contourNew.getSetContours();
-        contour.buildApproximation(fallibility);
+        contours = contourNew.getSetContours();
+        contours.buildApproximation(fallibility);
         areaImage = area.drawArea(color);
         update();
     }
+}
+
+void ImageWidget::displayArea(int state)
+{
+    stateArea = state;
+    update();
+}
+
+void ImageWidget::displayInnerContours(int state)
+{
+    stateInnerContours = state;
+    update();
 }
 int ImageWidget::getTransparency()
 {
@@ -192,12 +220,22 @@ int ImageWidget::getFallibility()
 {
     return fallibility;
 }
+
+bool ImageWidget::getStateArea()
+{
+    return stateArea;
+}
+
+bool ImageWidget::getStateInnerContours()
+{
+    return stateInnerContours;
+}
 void ImageWidget::clearScreen()
 {
     xMouse = -1;
     yMouse = -1;
     areaImage = QImage();
-    contour = ContoursSet();
+    contours = ContoursSet();
     isContourExist = false;
     dragStartPosition = QPointF(0, 0);
     zoom = 1.0;
@@ -223,7 +261,7 @@ bool ImageWidget::isPointNode(const QPoint &cursorPosition)             // во�
     if(isContourExist)
     {
         QVector<QVector<QPoint>> *pointsApproximation;
-        pointsApproximation = contour.getNodesApproximation();
+        pointsApproximation = contours.getNodesApproximation();
         for(int i = 0, t = pointsApproximation->size(); i < t; ++i)
         {
             QVector<QPoint> &rowPoints = (*pointsApproximation)[i];

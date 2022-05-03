@@ -5,6 +5,7 @@ class ImageArea;
 
 class ContourBuilder
 {
+    ImageArea *imageArea;
     QVector<QVector<int>> *conditionPoint;
     ContoursSet setContours;
     //void findAppropriateNeigbours(QVector<QPoint> &points, QVector<int> &states, QVector<QPoint> &neigbours, int x, int y);
@@ -13,6 +14,7 @@ class ContourBuilder
     void addNeigbour(QVector<QPoint>& pointsContour, QPoint &point, int &x, int &y);
     QPoint& findExternalPoint(int xMain, int yMain, QPoint &firstPoint, QPoint &secondPoint);
     bool leftNeigbourNotFromArea(const QPoint &neigbour, const QPoint &point, int imageWidth, int imageHeight);
+    bool defineIsContourExternal(const int x, const int y, const int imageWidth, const int imageHeight);
 
 public:
     ContourBuilder(ImageArea *area = nullptr);

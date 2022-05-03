@@ -26,17 +26,21 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(CentralWidget);
 
     resize(800, 600);
-    setWindowTitle(tr("Image"));
+    setWindowTitle(tr("Intensity"));
 
     bar->setInitialValueSlider(widget->getTransparency());
     bar->setInitialValueAccuracy(widget->getAccuracy());
     bar->setInitialValueFallibility((widget->getFallibility()));
+    bar->setInitialStateCheckBoxDisplayArea(widget->getStateArea());
+    bar->setInitialStateCheckBoxInnerContours(widget->getStateInnerContours());
 
     connect(bar, SIGNAL(signalSliderTransparency(int)), widget, SLOT(userTransparency(int)));
     connect(bar, SIGNAL(signalFallibility(int)), widget, SLOT(userFallibility(int)));
     connect(bar, SIGNAL(signalColor()), widget, SLOT(userColor()));
     connect(bar, SIGNAL(accuracyChanged(int)), widget, SLOT(userAccuracy(int)));
     connect(widget, SIGNAL(mouseMoved(int)), bar, SLOT(setValueIntensity(int)));
+    connect(bar, &RightBar::checkBoxDisplayAreaStateChanged, widget, &ImageWidget::displayArea);
+    connect(bar, &RightBar::checkBoxInnerContoursStateChanged, widget, &ImageWidget::displayInnerContours);
 }
 void MainWindow::closeEvent(QCloseEvent *event)
 {

@@ -10,6 +10,8 @@ RightBar::RightBar(QWidget *parent) : QWidget(parent),
     valueFallibility(0x0),
     valueAccuracy(0x0),
     colorChoice(0x0),
+    displayArea(Q_NULLPTR),
+    innerContours(Q_NULLPTR),
     layoutRightBar(0x0),
     layoutLabel(0x0)
 {
@@ -20,6 +22,7 @@ RightBar::RightBar(QWidget *parent) : QWidget(parent),
     createFallibility();
     createLine();
     createButton();
+    createCheckBoxes();
 
     layoutRightBar = new QVBoxLayout;
     layoutRightBar->addLayout(layoutLabel);
@@ -30,6 +33,8 @@ RightBar::RightBar(QWidget *parent) : QWidget(parent),
     layoutRightBar->addWidget(accuracy);
     layoutRightBar->addWidget(valueAccuracy);
     layoutRightBar->addWidget(colorChoice);
+    layoutRightBar->addWidget(displayArea);
+    layoutRightBar->addWidget(innerContours);
     layoutRightBar->addStretch();
     setLayout(layoutRightBar);
 }
@@ -93,6 +98,14 @@ void RightBar::createButton()
     colorChoice = new QPushButton("Выбор цвета...");
     connect(colorChoice, SIGNAL(clicked()), this, SIGNAL(signalColor()));
 }
+
+void RightBar::createCheckBoxes()
+{
+    displayArea = new QCheckBox("Отображать область");
+    innerContours = new QCheckBox("Отображать внутренние контуры");
+    connect(displayArea, &QCheckBox::stateChanged, this, &RightBar::checkBoxDisplayAreaStateChanged);
+    connect(innerContours, &QCheckBox::stateChanged, this, &RightBar::checkBoxInnerContoursStateChanged);
+}
 void RightBar::setValueIntensity(int a)
 {
     valueIntensity->setText(QString::number(a));
@@ -108,4 +121,14 @@ void RightBar::setInitialValueAccuracy(int a)
 void RightBar::setInitialValueFallibility(int a)
 {
     valueFallibility->setValue(a);
+}
+
+void RightBar::setInitialStateCheckBoxDisplayArea(int state)
+{
+    displayArea->setChecked(state);
+}
+
+void RightBar::setInitialStateCheckBoxInnerContours(int state)
+{
+    innerContours->setChecked(state);
 }

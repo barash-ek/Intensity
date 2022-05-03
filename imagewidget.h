@@ -10,13 +10,15 @@ class ImageWidget: public QWidget
 private:
     Image image;
     ImageArea area;
-    ContoursSet contour;
+    ContoursSet contours;
     QImage areaImage, contourImage;
     int xMouse, yMouse;
     int transparency;
     QColor color;
     int accuracy;
     int fallibility;
+    bool stateArea;
+    bool stateInnerContours;
     qreal zoom;
     QPointF startDraw;
     QMatrix transformMatrix;
@@ -37,6 +39,8 @@ public:
     int getTransparency();
     int getAccuracy();
     int getFallibility();
+    bool getStateArea();
+    bool getStateInnerContours();
 
 signals:
     void mouseMoved(int a);
@@ -48,6 +52,8 @@ public slots:
     void userFallibility(int a);
     void userColor();
     void userAccuracy(int a);
+    void displayArea(int state);
+    void displayInnerContours(int state);
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
