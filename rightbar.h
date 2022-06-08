@@ -7,14 +7,9 @@
 class RightBar: public QWidget
 {
     Q_OBJECT
+
 private:
-    void createIntensity();
-    void createSliderTranparency();
-    void createFallibility();
-    void createLine();
-    void createButton();
-    void createCheckBoxes();
-    QLabel *transparency, *accuracy, *intensity, *valueIntensity, *fallibility;
+    QLabel *transparency, *accuracy, *intensity, *nodes, *valueIntensity, *fallibility, *countNodes;
     QSlider *valueTransparency;
     QSpinBox *valueFallibility;
     QSpinBox *valueAccuracy;
@@ -23,9 +18,18 @@ private:
     QCheckBox *innerContours;
     QVBoxLayout *layoutRightBar;
     QHBoxLayout *layoutLabel;
+    QHBoxLayout *layoutNodes;
+
+    void createIntensity();
+    void createSliderTranparency();
+    void createFallibility();
+    void createLine();
+    void createButton();
+    void createCheckBoxes();
+    void createCountNodes();
 
 public:
-    RightBar(QWidget *parent = nullptr);
+    RightBar(QWidget *parent = Q_NULLPTR);
     void setInitialValueSlider(int a);
     void setInitialValueAccuracy(int a);
     void setInitialValueFallibility(int a);
@@ -41,7 +45,8 @@ signals:
     void checkBoxInnerContoursStateChanged(int a);
 
 public slots:
-    void setValueIntensity(int a);
+    void setValueIntensity(QString a);
+    void setCountNodes(QString a);
 };
 
 #endif // RIGHTBAR_H

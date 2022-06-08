@@ -12,7 +12,6 @@ ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
     stateArea(false),
     stateInnerContours(true),
     zoom(1.0),
-    startDraw(0.0, 0.0),
     isContourExist(false),
     dragStartPosition(0, 0),
     draggableNode(0x0),
@@ -22,8 +21,7 @@ ImageWidget::ImageWidget(QWidget *parent): QWidget(parent),
     setMouseTracking(true);
 
     setAttribute(Qt::WA_StaticContents);
-    setAcceptDrops(true);
-    connect(this, SIGNAL(imageLoaded()), this, SLOT(scaleImage()));
+    connect(this, &ImageWidget::imageLoaded, this, &ImageWidget::scaleImage);
 }
 bool ImageWidget::openImage(const QString &fileName)
 {
@@ -74,9 +72,13 @@ void ImageWidget::mouseMoveEvent(QMouseEvent *event)
     const QPointF cursorPositionf = transformMatrix.inverted().map(event->pos());
     const QPoint cursorPosition(cursorPositionf.x(), cursorPositionf.y());
 
-    int a = image.getIntensity(cursorPosition);
-    if(a >= 0)
-        emit mouseMoved(a);
+    int intensity = image.getIntensity(cursorPosition);
+    QString valueIntensity;
+    if(intensity >= 0)
+       valueIntensity = QString::number(intensity);
+    else
+        valueIntensity = "";
+    emit mouseMoved(valueIntensity);
 
     if(dragStartPosition != QPointF(0, 0))
     {
@@ -102,11 +104,9 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     painter.setMatrix(transformMatrix);
 
-    //startDraw = QPointF((this->width() - image.getImage().width()) / 2, (this->height() - image.getImage().height()) / 2);
-
-    painter.drawImage(startDraw, image.getImage());
+    painter.drawImage(QPointF(0, 0), image.getImage());
     if(stateArea)
-        painter.drawImage(startDraw, areaImage);
+        painter.drawImage(QPointF(0, 0), areaImage);
 
     QVector<QVector<QPoint>> *pointsApproximation = Q_NULLPTR;
     QVector<QVector<QPoint>> vectorAuxiliary;
@@ -123,19 +123,23 @@ void ImageWidget::paintEvent(QPaintEvent *event)
         }
         pointsApproximation = &vectorAuxiliary;
     }
+
+    int countNodes = 0;
     for(int k = 0, t = pointsApproximation->size(); k < t; ++k)
     {
         const QVector<QPoint> &points = pointsApproximation->at(k);
         if(points.size() > 2)
         {
-            painter.setPen(QPen(Qt::blue, thicknessPenLines));
+            countNodes += points.size();
+            emit countNodesChanged(QString::number(countNodes));
+            painter.setPen(QPen(Qt::red, thicknessPenLines));
             for(int i = 0, p = points.size() - 1; i < p; ++i)
-                painter.drawLine(points[i] + startDraw, points[i + 1] + startDraw);
-            painter.drawLine(points[points.size() - 1] + startDraw, points[0] + startDraw);    // для соединения с первой точкой контура
+                painter.drawLine(points[i], points[i + 1]);
+            painter.drawLine(points[points.size() - 1], points[0]);    // для соединения с первой точкой контура
 
-            painter.setPen(QPen(Qt::magenta, thicknessPenNodes));
+            painter.setPen(QPen(Qt::red, thicknessPenNodes));
             for(int i = 0, p = points.size(); i < p; ++i)
-                painter.drawPoint(points[i] + startDraw);
+                painter.drawEllipse(points[i], thicknessPenNodes / 2, thicknessPenNodes / 2);
         }
     }
 }
@@ -239,15 +243,17 @@ void ImageWidget::clearScreen()
     isContourExist = false;
     dragStartPosition = QPointF(0, 0);
     zoom = 1.0;
+    emit mouseMoved("");
+    emit countNodesChanged("");
 }
 void ImageWidget::wheelEvent(QWheelEvent *event)
 {
     static const qreal zoomMin = 0.1;
-    static const qreal zoomMax = 10.0;
+    static const qreal zoomMax = 20.0;
     const qreal zoomValue = event->angleDelta().y() > 0 ? 1.1 : 0.9;
     zoom *= zoomValue;
     if(zoom >= zoomMin && zoom <= zoomMax)
-        {
+    {
         const QPointF scalePoint = transformMatrix.inverted().map(event->position());
         transformMatrix.translate(scalePoint.x(), scalePoint.y());
         transformMatrix.scale(zoomValue, zoomValue);
@@ -256,27 +262,26 @@ void ImageWidget::wheelEvent(QWheelEvent *event)
     }
 
 }
-bool ImageWidget::isPointNode(const QPoint &cursorPosition)             // вопрос!!!
+bool ImageWidget::isPointNode(const QPoint &cursorPosition)
 {
-    if(isContourExist)
+    if(!isContourExist)
+        return false;
+
+    QVector<QVector<QPoint>> *pointsApproximation;
+    pointsApproximation = contours.getNodesApproximation();
+    for(int i = 0, t = pointsApproximation->size(); i < t; ++i)
     {
-        QVector<QVector<QPoint>> *pointsApproximation;
-        pointsApproximation = contours.getNodesApproximation();
-        for(int i = 0, t = pointsApproximation->size(); i < t; ++i)
+        QVector<QPoint> &rowPoints = (*pointsApproximation)[i];
+        for(int j = 0, p = rowPoints.size(); j < p; ++j)
         {
-            QVector<QPoint> &rowPoints = (*pointsApproximation)[i];
-            for(int j = 0, p = rowPoints.size(); j < p; ++j)
+            QPoint node = rowPoints[j];
+            if(qSqrt(qPow(cursorPosition.x() - node.x(), 2) + qPow(cursorPosition.y() - node.y(), 2)) <= qreal(thicknessPenNodes) / 2)
             {
-                QPoint node = rowPoints[j];
-                if(qSqrt(qPow(cursorPosition.x() - node.x(), 2) + qPow(cursorPosition.y() - node.y(), 2)) <= qreal(thicknessPenNodes) / 2)
-                {
-                    draggableNode = &rowPoints[j];
-                    return true;
-                }
+                draggableNode = &rowPoints[j];
+                return true;
             }
         }
     }
-    else
-        return false;
+
     return false;
 }

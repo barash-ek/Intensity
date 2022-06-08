@@ -1,19 +1,22 @@
 #include "rightbar.h"
 
 RightBar::RightBar(QWidget *parent) : QWidget(parent),
-    transparency(0x0),
-    accuracy(0x0),
-    intensity(0x0),
-    valueIntensity(0x0),
-    fallibility(0x0),
-    valueTransparency(0x0),
-    valueFallibility(0x0),
-    valueAccuracy(0x0),
-    colorChoice(0x0),
+    transparency(Q_NULLPTR),
+    accuracy(Q_NULLPTR),
+    intensity(Q_NULLPTR),
+    nodes(Q_NULLPTR),
+    valueIntensity(Q_NULLPTR),
+    fallibility(Q_NULLPTR),
+    countNodes(Q_NULLPTR),
+    valueTransparency(Q_NULLPTR),
+    valueFallibility(Q_NULLPTR),
+    valueAccuracy(Q_NULLPTR),
+    colorChoice(Q_NULLPTR),
     displayArea(Q_NULLPTR),
     innerContours(Q_NULLPTR),
-    layoutRightBar(0x0),
-    layoutLabel(0x0)
+    layoutRightBar(Q_NULLPTR),
+    layoutLabel(Q_NULLPTR),
+    layoutNodes(Q_NULLPTR)
 {
     setAttribute(Qt::WA_StaticContents);
 
@@ -23,6 +26,7 @@ RightBar::RightBar(QWidget *parent) : QWidget(parent),
     createLine();
     createButton();
     createCheckBoxes();
+    createCountNodes();
 
     layoutRightBar = new QVBoxLayout;
     layoutRightBar->addLayout(layoutLabel);
@@ -35,6 +39,7 @@ RightBar::RightBar(QWidget *parent) : QWidget(parent),
     layoutRightBar->addWidget(colorChoice);
     layoutRightBar->addWidget(displayArea);
     layoutRightBar->addWidget(innerContours);
+    layoutRightBar->addLayout(layoutNodes);
     layoutRightBar->addStretch();
     setLayout(layoutRightBar);
 }
@@ -43,7 +48,6 @@ void RightBar::createIntensity()
     intensity = new QLabel("Интенсивность:");
     intensity->setAlignment(Qt::AlignLeft);
     valueIntensity = new QLabel;
-    valueIntensity->setFixedWidth(20);
 
     layoutLabel = new QHBoxLayout;
     layoutLabel->addWidget(intensity);
@@ -70,22 +74,22 @@ void RightBar::createSliderTranparency()
                     "}");
     valueTransparency->setRange(0, 255);
     valueTransparency->setSingleStep(1);
-    connect(valueTransparency, SIGNAL(sliderMoved(int)), this, SIGNAL(signalSliderTransparency(int)));
+    connect(valueTransparency, &QSlider::sliderMoved, this, &RightBar::signalSliderTransparency);
 }
 void RightBar::createFallibility()
 {
-    fallibility = new QLabel("Погрешность (для контура):");
+    fallibility = new QLabel("Порог:");
     fallibility->setAlignment(Qt::AlignLeft);
     valueFallibility = new QSpinBox;
     valueFallibility->setFixedWidth(50);
     valueFallibility->setMinimum(0);
-    valueFallibility->setMaximum(1000);
+    valueFallibility->setMaximum(50);
 
     connect(valueFallibility, SIGNAL(valueChanged(int)), this, SIGNAL(signalFallibility(int)));
 }
 void RightBar::createLine()
 {
-    accuracy = new QLabel("Точность (для области):");
+    accuracy = new QLabel("Точность построения области:");
     valueAccuracy = new QSpinBox;
     valueAccuracy->setFixedWidth(50);
     valueAccuracy->setMinimum(0);
@@ -96,7 +100,7 @@ void RightBar::createLine()
 void RightBar::createButton()
 {
     colorChoice = new QPushButton("Выбор цвета...");
-    connect(colorChoice, SIGNAL(clicked()), this, SIGNAL(signalColor()));
+    connect(colorChoice, &QPushButton::clicked, this, &RightBar::signalColor);
 }
 
 void RightBar::createCheckBoxes()
@@ -106,9 +110,25 @@ void RightBar::createCheckBoxes()
     connect(displayArea, &QCheckBox::stateChanged, this, &RightBar::checkBoxDisplayAreaStateChanged);
     connect(innerContours, &QCheckBox::stateChanged, this, &RightBar::checkBoxInnerContoursStateChanged);
 }
-void RightBar::setValueIntensity(int a)
+
+void RightBar::createCountNodes()
 {
-    valueIntensity->setText(QString::number(a));
+    nodes = new QLabel("Количество узлов:");
+    nodes->setAlignment(Qt::AlignLeft);
+    countNodes = new QLabel;
+
+    layoutNodes = new QHBoxLayout;
+    layoutNodes->addWidget(nodes);
+    layoutNodes->addWidget(countNodes);
+}
+void RightBar::setValueIntensity(QString a)
+{
+    valueIntensity->setText(a);
+}
+
+void RightBar::setCountNodes(QString a)
+{
+    countNodes->setText(a);
 }
 void RightBar::setInitialValueSlider(int a)
 {

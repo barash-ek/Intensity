@@ -4,7 +4,7 @@
 
 ContourBuilder::ContourBuilder(ImageArea *area): imageArea(Q_NULLPTR), conditionPoint(Q_NULLPTR)
 {
-    if(area->getconditionPoint() != nullptr)
+    if(area->getconditionPoint() != Q_NULLPTR)
     {
         imageArea = area;
         conditionPoint = imageArea->getconditionPoint();

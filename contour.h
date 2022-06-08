@@ -7,7 +7,7 @@ class Contour
     bool isExternalContour;
 
 public:
-    Contour(QVector<QPoint> *points = nullptr);
+    Contour(QVector<QPoint> *points = Q_NULLPTR);
     QVector<QPoint>& getPoints();
     bool getStateContour();
     void setStateContour(bool state);

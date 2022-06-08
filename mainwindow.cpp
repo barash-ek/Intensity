@@ -34,13 +34,15 @@ MainWindow::MainWindow(QWidget *parent)
     bar->setInitialStateCheckBoxDisplayArea(widget->getStateArea());
     bar->setInitialStateCheckBoxInnerContours(widget->getStateInnerContours());
 
-    connect(bar, SIGNAL(signalSliderTransparency(int)), widget, SLOT(userTransparency(int)));
-    connect(bar, SIGNAL(signalFallibility(int)), widget, SLOT(userFallibility(int)));
-    connect(bar, SIGNAL(signalColor()), widget, SLOT(userColor()));
-    connect(bar, SIGNAL(accuracyChanged(int)), widget, SLOT(userAccuracy(int)));
-    connect(widget, SIGNAL(mouseMoved(int)), bar, SLOT(setValueIntensity(int)));
+    connect(bar, &RightBar::signalSliderTransparency, widget, &ImageWidget::userTransparency);
+    connect(bar, &RightBar::signalFallibility, widget, &ImageWidget::userFallibility);
+    connect(bar, &RightBar::signalColor, widget, &ImageWidget::userColor);
+    connect(bar, &RightBar::accuracyChanged, widget, &ImageWidget::userAccuracy);
     connect(bar, &RightBar::checkBoxDisplayAreaStateChanged, widget, &ImageWidget::displayArea);
     connect(bar, &RightBar::checkBoxInnerContoursStateChanged, widget, &ImageWidget::displayInnerContours);
+
+    connect(widget, &ImageWidget::mouseMoved, bar, &RightBar::setValueIntensity);
+    connect(widget, &ImageWidget::countNodesChanged, bar, &RightBar::setCountNodes);
 }
 void MainWindow::closeEvent(QCloseEvent *event)
 {

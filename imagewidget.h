@@ -7,11 +7,12 @@
 class ImageWidget: public QWidget
 {
     Q_OBJECT
+
 private:
     Image image;
     ImageArea area;
     ContoursSet contours;
-    QImage areaImage, contourImage;
+    QImage areaImage;
     int xMouse, yMouse;
     int transparency;
     QColor color;
@@ -20,7 +21,6 @@ private:
     bool stateArea;
     bool stateInnerContours;
     qreal zoom;
-    QPointF startDraw;
     QMatrix transformMatrix;
 
     bool isContourExist;
@@ -34,7 +34,7 @@ private:
     bool isPointNode(const QPoint &cursorPosition);
 
 public:
-    ImageWidget(QWidget *parent = nullptr);
+    ImageWidget(QWidget *parent = Q_NULLPTR);
     bool openImage(const QString &fileName);
     int getTransparency();
     int getAccuracy();
@@ -43,7 +43,8 @@ public:
     bool getStateInnerContours();
 
 signals:
-    void mouseMoved(int a);
+    void mouseMoved(QString a);
+    void countNodesChanged(QString a);
     void imageLoaded();
 
 public slots:
@@ -56,11 +57,11 @@ public slots:
     void displayInnerContours(int state);
 
 protected:
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
-    void wheelEvent(QWheelEvent *event) override;
-    void paintEvent(QPaintEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 };
 
 #endif // WIDGET_H

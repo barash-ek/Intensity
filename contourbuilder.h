@@ -17,7 +17,7 @@ class ContourBuilder
     bool defineIsContourExternal(const int x, const int y, const int imageWidth, const int imageHeight);
 
 public:
-    ContourBuilder(ImageArea *area = nullptr);
+    ContourBuilder(ImageArea *area = Q_NULLPTR);
     ContoursSet& getSetContours();
 };
 

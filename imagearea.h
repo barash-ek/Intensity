@@ -10,9 +10,9 @@ class ImageArea
     void selectionArea(const QPoint& pointPress);
     void selectionInnerVoidPoints();
     void selectionBoundaryPoints();
-    void deleteUnnecessaryPoint();
-    void adjustVicinityComplicatedPoint();
-    void turnInnerPointsToContourPoint();
+    void turnInnerPointsToContourPoints();
+    void deleteUnnecessaryPoints();
+    void adjustVicinityComplicatedPoints();
 
 public:
     enum PixelState

@@ -15,11 +15,11 @@ ImageArea::ImageArea(const Image &picture, const QPoint &point, int a): image(pi
     selectionArea(point);
     selectionInnerVoidPoints();
     selectionBoundaryPoints();
-    turnInnerPointsToContourPoint();
-    deleteUnnecessaryPoint();
-    adjustVicinityComplicatedPoint();
+    turnInnerPointsToContourPoints();
+    deleteUnnecessaryPoints();
+    adjustVicinityComplicatedPoints();
 }
-void ImageArea::selectionArea(const QPoint& pointPress)
+void ImageArea::selectionArea(const QPoint &pointPress)
 {
     const int imageHeight = image.getImage().height();
     const int imageWidth = image.getImage().width();
@@ -136,7 +136,7 @@ void ImageArea::selectionBoundaryPoints()
         }
      }
 }
-void ImageArea::deleteUnnecessaryPoint()   // Удаление точек, ведущих к самопересечению контура
+void ImageArea::deleteUnnecessaryPoints()   // Удаление точек, ведущих к самопересечению контура
 {
     const int imageHeight = image.getImage().height();
     const int imageWidth = image.getImage().width();
@@ -172,7 +172,7 @@ void ImageArea::deleteUnnecessaryPoint()   // Удаление точек, ве�
     }
 }
 
-void ImageArea::adjustVicinityComplicatedPoint()
+void ImageArea::adjustVicinityComplicatedPoints()
 {
     const int imageHeight = image.getImage().height();
     const int imageWidth = image.getImage().width();
@@ -212,7 +212,7 @@ void ImageArea::adjustVicinityComplicatedPoint()
     }
 }
 
-void ImageArea::turnInnerPointsToContourPoint()
+void ImageArea::turnInnerPointsToContourPoints()
 {
     const int imageHeight = image.getImage().height();
     const int imageWidth = image.getImage().width();
@@ -259,7 +259,7 @@ QImage ImageArea::drawArea(const QColor &color)
             /*else if(rowPointer[j] == ArrangeContour)
                 foundArea.setPixelColor(j, i, Qt::blue);
             else if(rowPointer[j] == ContourPoint)
-                foundArea.setPixelColor(j, i, Qt::green);
+                foundArea.setPixelColor(j, i, Qt::magenta);
             else if(rowPointer[j] == InnerVoid)
                 foundArea.setPixelColor(j, i, Qt::yellow);*/
             else

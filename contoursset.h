@@ -12,7 +12,7 @@ public:
     QVector<Contour>& getSetContours();
     QVector<QVector<QPoint>>* getNodesApproximation();
     void buildApproximation(int fallibility);
-    void operator<<(const Contour &contour);
+    void operator << (const Contour &contour);
 };
 
 #endif // CONTOURSSET_H
